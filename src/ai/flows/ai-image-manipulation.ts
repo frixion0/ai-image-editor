@@ -23,7 +23,8 @@ const AiImageManipulationInputSchema = z.object({
 export type AiImageManipulationInput = z.infer<typeof AiImageManipulationInputSchema>;
 
 const AiImageManipulationOutputSchema = z.object({
-  editedPhotoDataUri: z.string().describe('The manipulated photo as a data URI.'),
+  editedPhotoDataUri: z.string().optional().describe('The manipulated photo as a data URI.'),
+  error: z.string().optional(),
 });
 export type AiImageManipulationOutput = z.infer<typeof AiImageManipulationOutputSchema>;
 
@@ -38,25 +39,30 @@ const aiImageManipulationFlow = ai.defineFlow(
     outputSchema: AiImageManipulationOutputSchema,
   },
   async (input) => {
-    const {media} = await ai.generate({
-      model: 'googleai/gemini-2.0-flash-preview-image-generation',
-      prompt: [
-        {media: {url: input.photoDataUri}},
-        {text: input.instructions},
-      ],
-      config: {
-        responseModalities: ['TEXT', 'IMAGE'],
-      },
-    });
+    try {
+      const {media, finishReason} = await ai.generate({
+        model: 'googleai/gemini-2.0-flash-preview-image-generation',
+        prompt: [
+          {media: {url: input.photoDataUri}},
+          {text: input.instructions},
+        ],
+        config: {
+          responseModalities: ['TEXT', 'IMAGE'],
+        },
+      });
 
-    if (!media?.url) {
-      throw new Error('No manipulated image was generated.');
-    }
-    
-    if (media.url.startsWith('data:')) {
-      return {editedPhotoDataUri: media.url};
-    }
+      if (finishReason !== 'STOP' || !media?.url) {
+        return {error: 'The AI failed to generate an image. This might be due to safety settings or other restrictions. Please try a different prompt.'};
+      }
+      
+      if (media.url.startsWith('data:')) {
+        return {editedPhotoDataUri: media.url};
+      }
 
-    return {editedPhotoDataUri: `data:${media.contentType};base64,${media.url}`};
+      return {editedPhotoDataUri: `data:${media.contentType};base64,${media.url}`};
+    } catch (e) {
+      console.error(e);
+      return {error: 'An unexpected error occurred during image manipulation.' };
+    }
   }
 );

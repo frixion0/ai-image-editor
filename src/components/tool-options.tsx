@@ -47,7 +47,13 @@ export function ToolOptions({
     setIsLoading(true);
     try {
       const result = await action(input);
-      if (result && result[outputKey]) {
+      if (result.error) {
+        toast({
+          title: "AI Operation Failed",
+          description: result.error,
+          variant: "destructive",
+        });
+      } else if (result && result[outputKey]) {
         setImageDataUrl(result[outputKey]);
       } else {
         throw new Error("AI operation failed to return an image.");
