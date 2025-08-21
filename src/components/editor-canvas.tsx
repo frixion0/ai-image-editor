@@ -24,23 +24,23 @@ export function EditorCanvas({
   const [lastPos, setLastPos] = useState<{ x: number; y: number } | null>(null);
 
   const drawImage = useCallback(() => {
-    if (!imageDataUrl || !imageCanvasRef.current || !maskCanvasRef.current || !containerRef.current) return;
-    
+    if (!imageDataUrl || !imageCanvasRef.current || !containerRef.current) return;
+
+    const canvas = imageCanvasRef.current;
+    const container = containerRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
     const image = new Image();
     image.src = imageDataUrl;
     image.onload = () => {
-      const canvas = imageCanvasRef.current!;
-      const maskCanvas = maskCanvasRef.current!;
-      const container = containerRef.current!;
-      
       const containerWidth = container.clientWidth;
       const containerHeight = container.clientHeight;
-      
+
       const imageAspectRatio = image.width / image.height;
       const containerAspectRatio = containerWidth / containerHeight;
-      
+
       let canvasWidth, canvasHeight;
-      
       if (imageAspectRatio > containerAspectRatio) {
         canvasWidth = containerWidth;
         canvasHeight = containerWidth / imageAspectRatio;
@@ -49,28 +49,47 @@ export function EditorCanvas({
         canvasWidth = containerHeight * imageAspectRatio;
       }
       
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
-      maskCanvas.width = canvasWidth;
-      maskCanvas.height = canvasHeight;
+      canvas.width = image.width;
+      canvas.height = image.height;
       
-      const ctx = canvas.getContext("2d");
-      ctx?.clearRect(0, 0, canvas.width, canvas.height);
-      ctx?.drawImage(image, 0, 0, canvasWidth, canvasHeight);
+      const maskCanvas = maskCanvasRef.current;
+      if (maskCanvas) {
+        maskCanvas.width = image.width;
+        maskCanvas.height = image.height;
+      }
+
+      // We set the canvas style to scale it down, but keep the drawing resolution sharp
+      canvas.style.width = `${canvasWidth}px`;
+      canvas.style.height = `${canvasHeight}px`;
+
+      if (maskCanvas) {
+        maskCanvas.style.width = `${canvasWidth}px`;
+        maskCanvas.style.height = `${canvasHeight}px`;
+      }
+
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
     };
   }, [imageDataUrl, maskCanvasRef]);
 
   useEffect(() => {
     drawImage();
     window.addEventListener('resize', drawImage);
-    return () => window.removeEventListener('resize', drawImage);
-  }, [drawImage, imageDataUrl]);
+    return () => {
+      window.removeEventListener('resize', drawImage);
+    };
+  }, [drawImage]);
+
 
   const getMousePos = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
+    const canvas = imageCanvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+    // adjust mouse coordinates from the scaled canvas to the actual canvas size
     return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+      x: (e.clientX - rect.left) * (canvas.width / rect.width),
+      y: (e.clientY - rect.top) * (canvas.height / rect.height),
     };
   };
   
@@ -93,8 +112,17 @@ export function EditorCanvas({
   
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (activeTool !== 'object-removal') return;
+    const maskCtx = maskCanvasRef.current?.getContext("2d");
+    if (!maskCtx) return;
     setIsDrawing(true);
-    setLastPos(getMousePos(e));
+    const pos = getMousePos(e);
+    setLastPos(pos);
+     // Start drawing a single dot
+    maskCtx.beginPath();
+    maskCtx.fillStyle = "rgba(255, 255, 255, 1)";
+    maskCtx.arc(pos.x, pos.y, brushSize / 2, 0, Math.PI * 2);
+    maskCtx.fill();
+    setLastPos(pos);
   };
   
   const stopDrawing = () => {
@@ -104,11 +132,11 @@ export function EditorCanvas({
 
   return (
     <div ref={containerRef} className="relative h-full w-full flex items-center justify-center bg-muted/20 rounded-lg overflow-hidden">
-      <canvas ref={imageCanvasRef} className="max-h-full max-w-full object-contain rounded-lg shadow-md" />
+      <canvas ref={imageCanvasRef} className="max-h-full max-w-full object-contain" />
       {activeTool === "object-removal" && (
         <canvas
           ref={maskCanvasRef}
-          className="absolute top-0 left-0 right-0 bottom-0 m-auto cursor-crosshair"
+          className="absolute cursor-crosshair"
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
