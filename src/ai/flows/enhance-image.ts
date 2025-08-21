@@ -36,17 +36,6 @@ export async function enhanceImage(input: EnhanceImageInput): Promise<EnhanceIma
   return enhanceImageFlow(input);
 }
 
-const enhanceImagePrompt = ai.definePrompt({
-  name: 'enhanceImagePrompt',
-  input: {schema: EnhanceImageInputSchema},
-  output: {schema: EnhanceImageOutputSchema},
-  prompt: `Enhance the quality of the following image. Sharpen it, denoise it, and improve its overall visual appeal.
-
-   Output the enhanced image as a data URI.
-  Image: {{media url=photoDataUri}}
-  `,
-});
-
 const enhanceImageFlow = ai.defineFlow(
   {
     name: 'enhanceImageFlow',
@@ -66,6 +55,14 @@ const enhanceImageFlow = ai.defineFlow(
       },
     });
 
-    return {enhancedPhotoDataUri: media.url!};
+    if (!media?.url) {
+      throw new Error('No enhanced image was generated.');
+    }
+    
+    if (media.url.startsWith('data:')) {
+      return {enhancedPhotoDataUri: media.url};
+    }
+
+    return {enhancedPhotoDataUri: `data:${media.contentType};base64,${media.url}`};
   }
 );

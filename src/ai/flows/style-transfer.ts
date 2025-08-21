@@ -38,17 +38,6 @@ export async function styleTransfer(input: StyleTransferInput): Promise<StyleTra
   return styleTransferFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'styleTransferPrompt',
-  input: {schema: StyleTransferInputSchema},
-  output: {schema: StyleTransferOutputSchema},
-  prompt: `Apply the style of the following image to the content image.
-
-Content Image: {{media url=contentImage}}
-Style Image: {{media url=styleImage}}
-`,
-});
-
 const styleTransferFlow = ai.defineFlow(
   {
     name: 'styleTransferFlow',
@@ -68,6 +57,14 @@ const styleTransferFlow = ai.defineFlow(
       },
     });
 
-    return {styledImage: media!.url!};
+    if (!media?.url) {
+      throw new Error('No stylized image was generated.');
+    }
+
+    if (media.url.startsWith('data:')) {
+      return {styledImage: media.url};
+    }
+    
+    return {styledImage: `data:${media.contentType};base64,${media.url}`};
   }
 );

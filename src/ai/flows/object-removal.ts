@@ -34,17 +34,6 @@ export async function objectRemoval(input: ObjectRemovalInput): Promise<ObjectRe
   return objectRemovalFlow(input);
 }
 
-const objectRemovalPrompt = ai.definePrompt({
-  name: 'objectRemovalPrompt',
-  input: {schema: ObjectRemovalInputSchema},
-  output: {schema: ObjectRemovalOutputSchema},
-  prompt: `Remove the objects in the photo specified by the mask. Return the photo with the objects removed.
-
-Photo: {{media url=photoDataUri}}
-Mask: {{media url=maskDataUri}}
-`,
-});
-
 const objectRemovalFlow = ai.defineFlow(
   {
     name: 'objectRemovalFlow',
@@ -63,6 +52,15 @@ const objectRemovalFlow = ai.defineFlow(
         responseModalities: ['TEXT', 'IMAGE'],
       },
     });
-    return {editedPhotoDataUri: media!.url!};
+    
+    if (!media?.url) {
+        throw new Error('No edited image was generated.');
+    }
+
+    if (media.url.startsWith('data:')) {
+        return {editedPhotoDataUri: media.url};
+    }
+
+    return {editedPhotoDataUri: `data:${media.contentType};base64,${media.url}`};
   }
 );
