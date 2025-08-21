@@ -31,42 +31,32 @@ export async function aiImageManipulation(input: AiImageManipulationInput): Prom
   return aiImageManipulationFlow(input);
 }
 
-const ImageManipulationPromptOutput = z.object({
-  image: z.string().describe("The resulting image. THIS IS A REQUIRED FIELD."),
-});
-
-const prompt = ai.definePrompt({
-  name: 'aiImageManipulationPrompt',
-  input: { schema: AiImageManipulationInputSchema },
-  output: { schema: ImageManipulationPromptOutput },
-  prompt: `You are an expert image editor. Manipulate the image according to the user's instructions.
-
-Instructions: {{{instructions}}}
-
-Return ONLY the manipulated image.
-
-Image to manipulate:
-{{media url=photoDataUri}}
-`,
-});
-
 const aiImageManipulationFlow = ai.defineFlow(
   {
     name: 'aiImageManipulationFlow',
     inputSchema: AiImageManipulationInputSchema,
     outputSchema: AiImageManipulationOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
+  async (input) => {
+    const {media} = await ai.generate({
+      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+      prompt: [
+        {media: {url: input.photoDataUri}},
+        {text: input.instructions},
+      ],
+      config: {
+        responseModalities: ['TEXT', 'IMAGE'],
+      },
+    });
 
-    if (!output?.image) {
+    if (!media?.url) {
       throw new Error('No manipulated image was generated.');
     }
     
-    if (output.image.startsWith('data:')) {
-      return {editedPhotoDataUri: output.image};
+    if (media.url.startsWith('data:')) {
+      return {editedPhotoDataUri: media.url};
     }
 
-    return {editedPhotoDataUri: `data:image/png;base64,${output.image}`};
+    return {editedPhotoDataUri: `data:${media.contentType};base64,${media.url}`};
   }
 );
