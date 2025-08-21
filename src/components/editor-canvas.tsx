@@ -55,6 +55,7 @@ export function EditorCanvas({
       maskCanvas.height = canvasHeight;
       
       const ctx = canvas.getContext("2d");
+      ctx?.clearRect(0, 0, canvas.width, canvas.height);
       ctx?.drawImage(image, 0, 0, canvasWidth, canvasHeight);
     };
   }, [imageDataUrl, maskCanvasRef]);
@@ -63,7 +64,7 @@ export function EditorCanvas({
     drawImage();
     window.addEventListener('resize', drawImage);
     return () => window.removeEventListener('resize', drawImage);
-  }, [drawImage]);
+  }, [drawImage, imageDataUrl]);
 
   const getMousePos = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
