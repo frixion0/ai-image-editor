@@ -52,7 +52,17 @@ const objectRemovalFlow = ai.defineFlow(
     outputSchema: ObjectRemovalOutputSchema,
   },
   async input => {
-    const {output} = await objectRemovalPrompt(input);
-    return output!;
+    const {media} = await ai.generate({
+      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+      prompt: [
+        {media: {url: input.photoDataUri}},
+        {media: {url: input.maskDataUri}},
+        {text: 'Remove the objects specified by the mask.'},
+      ],
+      config: {
+        responseModalities: ['TEXT', 'IMAGE'],
+      },
+    });
+    return {editedPhotoDataUri: media!.url!};
   }
 );

@@ -1,3 +1,4 @@
+// This file uses server-side code.
 'use server';
 
 /**
@@ -15,7 +16,7 @@ const AiImageManipulationInputSchema = z.object({
   photoDataUri: z
     .string()
     .describe(
-      "A photo to be manipulated, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "A photo to be manipulated, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'"
     ),
   instructions: z.string().describe('Instructions for manipulating the image (e.g., add a cat, change the sky to blue).'),
 });
@@ -83,6 +84,11 @@ const aiImageManipulationFlow = ai.defineFlow(
         responseModalities: ['TEXT', 'IMAGE'],
       },
     });
-    return {editedPhotoDataUri: media!.url!};
+
+    if (!media?.url) {
+      throw new Error('No manipulated image was generated.');
+    }
+
+    return {editedPhotoDataUri: media.url!};
   }
 );

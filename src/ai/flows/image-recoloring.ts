@@ -22,9 +22,10 @@ const RecolorImageInputSchema = z.object({
 export type RecolorImageInput = z.infer<typeof RecolorImageInputSchema>;
 
 const RecolorImageOutputSchema = z.object({
-  recoloredPhotoDataUri: z
-    .string()
-    .describe("The recolored photo, as a data URI with MIME type and Base64 encoding."),
+  recoloredPhotoDataUri:
+    z
+      .string()
+      .describe("The recolored photo, as a data URI with MIME type and Base64 encoding."),
 });
 export type RecolorImageOutput = z.infer<typeof RecolorImageOutputSchema>;
 
@@ -90,3 +91,4 @@ const recolorImageFlow = ai.defineFlow(
     return {recoloredPhotoDataUri: media.url};
   }
 );
+

@@ -26,11 +26,11 @@ const StyleTransferInputSchema = z.object({
 export type StyleTransferInput = z.infer<typeof StyleTransferInputSchema>;
 
 const StyleTransferOutputSchema = z.object({
-  styledImage: z
-    .string()
-    .describe(
-      'The stylized image, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.' // add the base64 and data uri description
-    ),
+  styledImage:
+    z.string()
+      .describe(
+        "The stylized image, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      ),
 });
 export type StyleTransferOutput = z.infer<typeof StyleTransferOutputSchema>;
 
@@ -56,8 +56,18 @@ const styleTransferFlow = ai.defineFlow(
     outputSchema: StyleTransferOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    const {media} = await ai.generate({
+      model: 'googleai/gemini-2.0-flash-preview-image-generation',
+      prompt: [
+        {media: {url: input.contentImage}},
+        {media: {url: input.styleImage}},
+        {text: 'Apply the style from the style image to the content image.'},
+      ],
+      config: {
+        responseModalities: ['TEXT', 'IMAGE'],
+      },
+    });
+
+    return {styledImage: media!.url!};
   }
 );
-
