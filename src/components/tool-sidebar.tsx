@@ -3,7 +3,6 @@
 import React from "react";
 import {
   Wand2,
-  Eraser,
   Sparkles,
   Download,
   Trash2,
@@ -26,7 +25,6 @@ interface ToolSidebarProps {
 
 const tools: ToolDefinition[] = [
   { id: "enhance", name: "Enhance", icon: Wand2 },
-  { id: "object-removal", name: "Object Removal", icon: Eraser },
   { id: "ai-manipulation", name: "AI Manipulation", icon: Sparkles },
 ];
 

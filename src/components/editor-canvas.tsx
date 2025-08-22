@@ -1,27 +1,19 @@
 "use client";
 
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 import { Loader } from "lucide-react";
 
 interface EditorCanvasProps {
   imageDataUrl: string | null;
-  activeTool: string;
   isLoading: boolean;
-  brushSize: number;
-  maskCanvasRef: React.RefObject<HTMLCanvasElement>;
 }
 
 export function EditorCanvas({
   imageDataUrl,
-  activeTool,
   isLoading,
-  brushSize,
-  maskCanvasRef,
 }: EditorCanvasProps) {
   const imageCanvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [lastPos, setLastPos] = useState<{ x: number; y: number } | null>(null);
 
   const drawImage = useCallback(() => {
     if (!imageDataUrl || !imageCanvasRef.current || !containerRef.current) return;
@@ -51,26 +43,15 @@ export function EditorCanvas({
       
       canvas.width = image.width;
       canvas.height = image.height;
-      
-      const maskCanvas = maskCanvasRef.current;
-      if (maskCanvas) {
-        maskCanvas.width = image.width;
-        maskCanvas.height = image.height;
-      }
 
       // We set the canvas style to scale it down, but keep the drawing resolution sharp
       canvas.style.width = `${scaledWidth}px`;
       canvas.style.height = `${scaledHeight}px`;
 
-      if (maskCanvas) {
-        maskCanvas.style.width = `${scaledWidth}px`;
-        maskCanvas.style.height = `${scaledHeight}px`;
-      }
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
     };
-  }, [imageDataUrl, maskCanvasRef]);
+  }, [imageDataUrl]);
 
   useEffect(() => {
     drawImage();
@@ -80,67 +61,9 @@ export function EditorCanvas({
     };
   }, [drawImage]);
 
-  const getMousePos = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const canvas = maskCanvasRef.current;
-    if (!canvas) return { x: 0, y: 0 };
-    return {
-        x: (e.clientX - rect.left) * (canvas.width / rect.width),
-        y: (e.clientY - rect.top) * (canvas.height / rect.height),
-    };
-  };
-
-  const draw = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!isDrawing) return;
-    const pos = getMousePos(e);
-    const maskCtx = maskCanvasRef.current?.getContext("2d");
-    if (maskCtx && lastPos) {
-      maskCtx.beginPath();
-      maskCtx.strokeStyle = "white";
-      maskCtx.lineWidth = brushSize;
-      maskCtx.lineCap = "round";
-      maskCtx.lineJoin = "round";
-      maskCtx.moveTo(lastPos.x, lastPos.y);
-      maskCtx.lineTo(pos.x, pos.y);
-      maskCtx.stroke();
-    }
-    setLastPos(pos);
-  }, [isDrawing, lastPos, brushSize, maskCanvasRef]);
-  
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (activeTool !== 'object-removal') return;
-    setIsDrawing(true);
-    const pos = getMousePos(e);
-    setLastPos(pos);
-    
-    // To allow for clicking to draw dots
-    const maskCtx = maskCanvasRef.current?.getContext("2d");
-    if (maskCtx) {
-        maskCtx.beginPath();
-        maskCtx.fillStyle = "white";
-        maskCtx.arc(pos.x, pos.y, brushSize / 2, 0, Math.PI * 2);
-        maskCtx.fill();
-    }
-  };
-  
-  const stopDrawing = () => {
-    setIsDrawing(false);
-    setLastPos(null);
-  };
-
   return (
     <div ref={containerRef} className="relative h-full w-full flex items-center justify-center bg-muted/20 rounded-lg overflow-hidden">
       <canvas ref={imageCanvasRef} className="max-h-full max-w-full object-contain" />
-      {activeTool === "object-removal" && (
-        <canvas
-          ref={maskCanvasRef}
-          className="absolute cursor-crosshair"
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={stopDrawing}
-          onMouseLeave={stopDrawing}
-        />
-      )}
       {isLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
           <Loader className="h-12 w-12 animate-spin text-primary" />

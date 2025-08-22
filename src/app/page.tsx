@@ -15,9 +15,7 @@ export default function Home() {
   const [originalImageDataUrl, setOriginalImageDataUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTool, setActiveTool] = useState<Tool>("enhance");
-  const [brushSize, setBrushSize] = useState(40);
 
-  const maskCanvasRef = useRef<HTMLCanvasElement>(null);
   const { toast } = useToast();
 
   const handleImageUpload = (dataUrl: string) => {
@@ -66,10 +64,7 @@ export default function Home() {
                 <div className="flex-1 p-4">
                   <EditorCanvas
                     imageDataUrl={imageDataUrl}
-                    activeTool={activeTool}
                     isLoading={isLoading}
-                    brushSize={brushSize}
-                    maskCanvasRef={maskCanvasRef}
                   />
                 </div>
                 <div className="h-40 border-t bg-background p-4">
@@ -78,9 +73,6 @@ export default function Home() {
                     imageDataUrl={imageDataUrl}
                     setImageDataUrl={setImageDataUrl}
                     setIsLoading={setIsLoading}
-                    brushSize={brushSize}
-                    setBrushSize={setBrushSize}
-                    maskCanvasRef={maskCanvasRef}
                   />
                 </div>
               </div>
