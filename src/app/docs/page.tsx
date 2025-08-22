@@ -11,6 +11,12 @@ import { Loader2, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/image-upload';
 import { cn } from '@/lib/utils';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 const CodeBlock = ({ code, className }: { code: string, className?: string }) => {
   const [hasCopied, setHasCopied] = useState(false);
@@ -169,7 +175,13 @@ const APITester = ({ endpoint, fields }: { endpoint: string; fields: { name: str
 
 
 export default function DocsPage() {
-  const baseUrl = "https://9000-firebase-studio-1755789802422.cluster-73qgvk7hjjadkrjeyexca5ivva.cloudworkstations.dev";
+  const [baseUrl, setBaseUrl] = useState('');
+  
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setBaseUrl(window.location.origin);
+    }
+  }, []);
 
   const enhanceExample = `fetch('${baseUrl}/api/enhance', {
   method: 'POST',
@@ -183,6 +195,13 @@ export default function DocsPage() {
 .then(response => response.json())
 .then(data => console.log(data));`;
 
+  const enhanceSuccessResponse = `{
+  "enhancedPhotoDataUri": "data:image/png;base64,..."
+}`;
+  const enhanceErrorResponse = `{
+  "error": "Failed to enhance image"
+}`;
+
   const manipulateExample = `fetch('${baseUrl}/api/manipulate', {
   method: 'POST',
   headers: {
@@ -195,6 +214,13 @@ export default function DocsPage() {
 })
 .then(response => response.json())
 .then(data => console.log(data));`;
+
+  const manipulateSuccessResponse = `{
+  "editedPhotoDataUri": "data:image/png;base64,..."
+}`;
+  const manipulateErrorResponse = `{
+  "error": "The AI failed to generate an image. This might be due to safety settings or other restrictions. Please try a different prompt."
+}`;
 
   return (
     <div className="flex h-screen w-screen flex-col bg-background font-sans text-foreground">
@@ -231,10 +257,19 @@ export default function DocsPage() {
                         <li><span className="font-semibold">photoDataUri</span> (string, required): A data URI of the image to enhance.</li>
                     </ul>
                   </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Example Code (JavaScript Fetch)</h3>
-                    <CodeBlock code={enhanceExample} />
-                  </div>
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger className="text-sm font-semibold">Example Usage</AccordionTrigger>
+                      <AccordionContent>
+                        <h4 className="font-semibold text-xs mb-2 uppercase text-muted-foreground">Code (JavaScript Fetch)</h4>
+                        <CodeBlock code={enhanceExample} />
+                         <h4 className="font-semibold text-xs mt-4 mb-2 uppercase text-muted-foreground">Success Response (200)</h4>
+                        <CodeBlock code={enhanceSuccessResponse} className="json" />
+                         <h4 className="font-semibold text-xs mt-4 mb-2 uppercase text-muted-foreground">Error Response (500)</h4>
+                        <CodeBlock code={enhanceErrorResponse} className="json" />
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                   <div>
                     <h3 className="font-semibold mb-2">API Tester</h3>
                     <APITester endpoint="enhance" fields={[{ name: 'photoDataUri', type: 'file', placeholder: '' }]} />
@@ -263,10 +298,20 @@ export default function DocsPage() {
                             <li><span className="font-semibold">instructions</span> (string, required): Text description of the manipulation to perform.</li>
                         </ul>
                     </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Example Code (JavaScript Fetch)</h3>
-                    <CodeBlock code={manipulateExample} />
-                  </div>
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger className="text-sm font-semibold">Example Usage</AccordionTrigger>
+                      <AccordionContent>
+                        <h4 className="font-semibold text-xs mb-2 uppercase text-muted-foreground">Code (JavaScript Fetch)</h4>
+                        <CodeBlock code={manipulateExample} />
+                        <h4 className="font-semibold text-xs mt-4 mb-2 uppercase text-muted-foreground">Success Response (200)</h4>
+                        <CodeBlock code={manipulateSuccessResponse} className="json" />
+                        <h4 className="font-semibold text-xs mt-4 mb-2 uppercase text-muted-foreground">Error Response (500)</h4>
+                        <CodeBlock code={manipulateErrorResponse} className="json" />
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+
                   <div>
                     <h3 className="font-semibold mb-2">API Tester</h3>
                     <APITester endpoint="manipulate" fields={[
