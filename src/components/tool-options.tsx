@@ -115,7 +115,7 @@ export function ToolOptions({
 
   const onObjectRemovalApply = () => {
     const maskDataUri = getProcessedMask();
-    if (maskDataUri) {
+    if (maskDataUri && imageDataUrl) {
       handleAIAction(objectRemoval, { photoDataUri: imageDataUrl, maskDataUri }, "editedPhotoDataUri");
     }
   }
@@ -126,7 +126,11 @@ export function ToolOptions({
         return (
           <div className="flex flex-col items-center justify-center h-full">
             <p className="text-muted-foreground mb-4">Automatically improve image quality using AI</p>
-            <Button size="lg" onClick={() => handleAIAction(enhanceImage, { photoDataUri: imageDataUrl }, "enhancedPhotoDataUri")}>
+            <Button size="lg" onClick={() => {
+              if (imageDataUrl) {
+                handleAIAction(enhanceImage, { photoDataUri: imageDataUrl }, "enhancedPhotoDataUri")
+              }
+            }}>
               Enhance Image
             </Button>
           </div>
@@ -165,7 +169,11 @@ export function ToolOptions({
               placeholder={placeholder}
               className="flex-grow"
             />
-            <Button onClick={() => handleAIAction(actionFn, { photoDataUri: imageDataUrl, [inputKey]: prompt }, outputKey)}>Apply</Button>
+            <Button onClick={() => {
+              if (imageDataUrl) {
+                handleAIAction(actionFn, { photoDataUri: imageDataUrl, [inputKey]: prompt }, outputKey)
+              }
+            }}>Apply</Button>
           </div>
         );
       default:
