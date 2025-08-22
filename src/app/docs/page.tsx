@@ -11,12 +11,8 @@ import { Loader2, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/image-upload';
 import { cn } from '@/lib/utils';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Terminal } from 'lucide-react';
 
 const CodeBlock = ({ code, className }: { code: string, className?: string }) => {
   const [hasCopied, setHasCopied] = useState(false);
@@ -62,6 +58,7 @@ const APITester = ({ endpoint, fields, baseUrl }: { endpoint: string; fields: { 
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -78,6 +75,7 @@ const APITester = ({ endpoint, fields, baseUrl }: { endpoint: string; fields: { 
     e.preventDefault();
     setIsLoading(true);
     setResult(null);
+    setApiError(null);
 
     try {
       const response = await fetch(`${baseUrl}/api/${endpoint}`, {
@@ -103,11 +101,12 @@ const APITester = ({ endpoint, fields, baseUrl }: { endpoint: string; fields: { 
       }
 
     } catch (error: any) {
-      toast({
-        title: "API Error",
-        description: error.message,
-        variant: "destructive",
-      });
+        setApiError(error.message);
+        toast({
+            title: "API Error",
+            description: error.message,
+            variant: "destructive",
+        });
     } finally {
       setIsLoading(false);
     }
@@ -165,6 +164,14 @@ const APITester = ({ endpoint, fields, baseUrl }: { endpoint: string; fields: { 
           </div>
         ) : result ? (
           <img src={result} alt="API Result" className="rounded-lg max-h-full max-w-full" />
+        ) : apiError ? (
+            <Alert variant="destructive">
+                <Terminal className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                    {apiError}
+                </AlertDescription>
+            </Alert>
         ) : (
           <p className="text-muted-foreground">API response will be displayed here</p>
         )}

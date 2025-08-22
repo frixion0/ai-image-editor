@@ -40,7 +40,7 @@ const aiImageManipulationFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      const {media} = await ai.generate({
+      const {media, finishReason, message} = await ai.generate({
         model: 'googleai/gemini-2.0-flash-preview-image-generation',
         prompt: [
           {media: {url: input.photoDataUri}},
@@ -52,7 +52,17 @@ const aiImageManipulationFlow = ai.defineFlow(
       });
 
       if (!media?.url) {
-        return {error: 'The AI failed to generate an image. This might be due to safety settings or other restrictions. Please try a different prompt.'};
+        let errorMessage = 'The AI failed to generate an image.';
+        if (finishReason && finishReason !== 'STOP') {
+          errorMessage += ` The operation finished with reason: ${finishReason}.`;
+        }
+        if(message?.content) {
+            const textContent = message.content.find(p => p.text)?.text;
+            if (textContent) {
+                errorMessage += ` Model response: ${textContent}`;
+            }
+        }
+        return {error: errorMessage};
       }
       
       if (media.url.startsWith('data:')) {
@@ -60,9 +70,9 @@ const aiImageManipulationFlow = ai.defineFlow(
       }
 
       return {editedPhotoDataUri: `data:${media.contentType};base64,${media.url}`};
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      return {error: 'An unexpected error occurred during image manipulation.' };
+      return {error: e.message || 'An unexpected error occurred during image manipulation.' };
     }
   }
 );
