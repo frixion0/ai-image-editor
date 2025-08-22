@@ -40,7 +40,7 @@ const aiImageManipulationFlow = ai.defineFlow(
   },
   async (input) => {
     try {
-      const response = await ai.generate({
+      const {media} = await ai.generate({
         model: 'googleai/gemini-2.0-flash-preview-image-generation',
         prompt: [
           {media: {url: input.photoDataUri}},
@@ -51,8 +51,7 @@ const aiImageManipulationFlow = ai.defineFlow(
         },
       });
 
-      const media = response.media;
-      if (response.finishReason !== 'STOP' || !media?.url) {
+      if (!media?.url) {
         return {error: 'The AI failed to generate an image. This might be due to safety settings or other restrictions. Please try a different prompt.'};
       }
       
