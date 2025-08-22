@@ -40,13 +40,13 @@ export function EditorCanvas({
       const imageAspectRatio = image.width / image.height;
       const containerAspectRatio = containerWidth / containerHeight;
 
-      let canvasWidth, canvasHeight;
+      let scaledWidth, scaledHeight;
       if (imageAspectRatio > containerAspectRatio) {
-        canvasWidth = containerWidth;
-        canvasHeight = containerWidth / imageAspectRatio;
+        scaledWidth = containerWidth;
+        scaledHeight = containerWidth / imageAspectRatio;
       } else {
-        canvasHeight = containerHeight;
-        canvasWidth = containerHeight * imageAspectRatio;
+        scaledHeight = containerHeight;
+        scaledWidth = containerHeight * imageAspectRatio;
       }
       
       canvas.width = image.width;
@@ -59,14 +59,13 @@ export function EditorCanvas({
       }
 
       // We set the canvas style to scale it down, but keep the drawing resolution sharp
-      canvas.style.width = `${canvasWidth}px`;
-      canvas.style.height = `${canvasHeight}px`;
+      canvas.style.width = `${scaledWidth}px`;
+      canvas.style.height = `${scaledHeight}px`;
 
       if (maskCanvas) {
-        maskCanvas.style.width = `${canvasWidth}px`;
-        maskCanvas.style.height = `${canvasHeight}px`;
+        maskCanvas.style.width = `${scaledWidth}px`;
+        maskCanvas.style.height = `${scaledHeight}px`;
       }
-
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
@@ -97,7 +96,7 @@ export function EditorCanvas({
     const maskCtx = maskCanvasRef.current?.getContext("2d");
     if (maskCtx && lastPos) {
       maskCtx.beginPath();
-      maskCtx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+      maskCtx.strokeStyle = "white";
       maskCtx.lineWidth = brushSize;
       maskCtx.lineCap = "round";
       maskCtx.lineJoin = "round";
@@ -110,18 +109,18 @@ export function EditorCanvas({
   
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (activeTool !== 'object-removal') return;
-    const maskCtx = maskCanvasRef.current?.getContext("2d");
-    if (!maskCtx) return;
-
     setIsDrawing(true);
     const pos = getMousePos(e);
     setLastPos(pos);
-
-    // Draw the first dot
-    maskCtx.beginPath();
-    maskCtx.fillStyle = "rgba(255, 255, 255, 0.7)";
-    maskCtx.arc(pos.x, pos.y, brushSize / 2, 0, Math.PI * 2);
-    maskCtx.fill();
+    
+    // To allow for clicking to draw dots
+    const maskCtx = maskCanvasRef.current?.getContext("2d");
+    if (maskCtx) {
+        maskCtx.beginPath();
+        maskCtx.fillStyle = "white";
+        maskCtx.arc(pos.x, pos.y, brushSize / 2, 0, Math.PI * 2);
+        maskCtx.fill();
+    }
   };
   
   const stopDrawing = () => {
@@ -136,10 +135,6 @@ export function EditorCanvas({
         <canvas
           ref={maskCanvasRef}
           className="absolute cursor-crosshair"
-          style={{
-            width: imageCanvasRef.current?.style.width,
-            height: imageCanvasRef.current?.style.height,
-          }}
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}

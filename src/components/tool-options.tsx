@@ -137,8 +137,8 @@ export function ToolOptions({
         );
       case "object-removal":
         return (
-          <div className="flex items-center justify-between h-full w-full gap-8">
-            <div className="flex-grow flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between h-full w-full gap-4 sm:gap-8">
+            <div className="flex-grow w-full sm:w-auto flex items-center gap-4">
                 <Label htmlFor="brush-size" className="min-w-fit">Brush Size</Label>
                 <Slider
                   id="brush-size"
