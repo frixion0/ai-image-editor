@@ -58,7 +58,7 @@ const CodeBlock = ({ code, className }: { code: string, className?: string }) =>
   );
 };
 
-const APITester = ({ endpoint, fields }: { endpoint: string; fields: { name: string; type: string; placeholder: string }[] }) => {
+const APITester = ({ endpoint, fields, baseUrl }: { endpoint: string; fields: { name: string; type: string; placeholder: string }[]; baseUrl: string; }) => {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -80,7 +80,7 @@ const APITester = ({ endpoint, fields }: { endpoint: string; fields: { name: str
     setResult(null);
 
     try {
-      const response = await fetch(`/api/${endpoint}`, {
+      const response = await fetch(`${baseUrl}/api/${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +116,7 @@ const APITester = ({ endpoint, fields }: { endpoint: string; fields: { name: str
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <p className="font-mono text-sm">POST /api/{endpoint}</p>
+        <p className="font-mono text-sm">POST {baseUrl}/api/{endpoint}</p>
         
         <Card>
           <CardContent className="pt-6">
@@ -274,7 +274,7 @@ export default function DocsPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold mt-8 mb-4">API Tester</h3>
-                    <APITester endpoint="enhance" fields={[{ name: 'photoDataUri', type: 'file', placeholder: '' }]} />
+                    <APITester endpoint="enhance" fields={[{ name: 'photoDataUri', type: 'file', placeholder: '' }]} baseUrl={baseUrl} />
                   </div>
                 </CardContent>
               </Card>
@@ -321,7 +321,7 @@ export default function DocsPage() {
                     <APITester endpoint="manipulate" fields={[
                       { name: 'photoDataUri', type: 'file', placeholder: '' },
                       { name: 'instructions', type: 'textarea', placeholder: 'e.g., "add a hat on the person"' }
-                    ]} />
+                    ]} baseUrl={baseUrl} />
                   </div>
                 </CardContent>
               </Card>
