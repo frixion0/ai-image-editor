@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
 export async function POST(request: Request) {
@@ -24,13 +24,14 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error("Error in /api/manipulate:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500, headers: corsHeaders });
+    const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
+    return NextResponse.json({ error: errorMessage }, { status: 500, headers: corsHeaders });
   }
 }
 
-export async function OPTIONS() {
+export async function OPTIONS(request: Request) {
   return new Response(null, {
-    status: 204,
+    status: 200,
     headers: corsHeaders,
   });
 }
