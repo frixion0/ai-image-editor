@@ -81,25 +81,23 @@ export function EditorCanvas({
     };
   }, [drawImage]);
 
-
   const getMousePos = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const canvas = imageCanvasRef.current;
+    const canvas = maskCanvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
-    // adjust mouse coordinates from the scaled canvas to the actual canvas size
     return {
-      x: (e.clientX - rect.left) * (canvas.width / rect.width),
-      y: (e.clientY - rect.top) * (canvas.height / rect.height),
+        x: (e.clientX - rect.left) * (canvas.width / rect.width),
+        y: (e.clientY - rect.top) * (canvas.height / rect.height),
     };
   };
-  
+
   const draw = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawing) return;
     const pos = getMousePos(e);
     const maskCtx = maskCanvasRef.current?.getContext("2d");
     if (maskCtx && lastPos) {
       maskCtx.beginPath();
-      maskCtx.strokeStyle = "rgba(255, 255, 255, 1)";
+      maskCtx.strokeStyle = "rgba(255, 255, 255, 0.7)";
       maskCtx.lineWidth = brushSize;
       maskCtx.lineCap = "round";
       maskCtx.lineJoin = "round";
@@ -114,12 +112,12 @@ export function EditorCanvas({
     if (activeTool !== 'object-removal') return;
     const maskCtx = maskCanvasRef.current?.getContext("2d");
     if (!maskCtx) return;
+
     setIsDrawing(true);
     const pos = getMousePos(e);
-    setLastPos(pos);
-     // Start drawing a single dot
+
     maskCtx.beginPath();
-    maskCtx.fillStyle = "rgba(255, 255, 255, 1)";
+    maskCtx.fillStyle = "rgba(255, 255, 255, 0.7)";
     maskCtx.arc(pos.x, pos.y, brushSize / 2, 0, Math.PI * 2);
     maskCtx.fill();
     setLastPos(pos);
@@ -137,6 +135,10 @@ export function EditorCanvas({
         <canvas
           ref={maskCanvasRef}
           className="absolute cursor-crosshair"
+          style={{
+            width: imageCanvasRef.current?.style.width,
+            height: imageCanvasRef.current?.style.height,
+          }}
           onMouseDown={startDrawing}
           onMouseMove={draw}
           onMouseUp={stopDrawing}
