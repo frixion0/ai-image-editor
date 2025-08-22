@@ -11,14 +11,14 @@ import { aiImageManipulation } from "@/ai/flows/ai-image-manipulation";
 interface ToolOptionsProps {
   activeTool: Tool;
   imageDataUrl: string | null;
-  setImageDataUrl: (url: string | null) => void;
+  updateImageDataUrl: (url: string) => void;
   setIsLoading: (loading: boolean) => void;
 }
 
 export function ToolOptions({
   activeTool,
   imageDataUrl,
-  setImageDataUrl,
+  updateImageDataUrl,
   setIsLoading,
 }: ToolOptionsProps) {
   const { toast } = useToast();
@@ -40,7 +40,7 @@ export function ToolOptions({
           variant: "destructive",
         });
       } else if (result && result[outputKey]) {
-        setImageDataUrl(result[outputKey]);
+        updateImageDataUrl(result[outputKey]);
       } else {
         throw new Error("AI operation failed to return an image.");
       }

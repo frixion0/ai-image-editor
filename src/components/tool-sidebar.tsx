@@ -6,6 +6,7 @@ import {
   Sparkles,
   Download,
   Trash2,
+  Replace,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -72,6 +73,22 @@ export function ToolSidebar({
           </TooltipTrigger>
           <TooltipContent side="right">
             <p>Download</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-14 w-14"
+              onClick={handleReset}
+              aria-label="Change Image"
+            >
+              <Replace className="h-6 w-6" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            <p>Change Image</p>
           </TooltipContent>
         </Tooltip>
         <Tooltip>
