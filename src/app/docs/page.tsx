@@ -7,15 +7,50 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/image-upload';
+import { cn } from '@/lib/utils';
 
-const CodeBlock = ({ code }: { code: string }) => (
-  <pre className="bg-muted p-4 rounded-lg text-sm overflow-x-auto">
-    <code>{code}</code>
-  </pre>
-);
+const CodeBlock = ({ code, className }: { code: string, className?: string }) => {
+  const [hasCopied, setHasCopied] = useState(false);
+  const { toast } = useToast();
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(code).then(() => {
+      setHasCopied(true);
+      setTimeout(() => setHasCopied(false), 2000);
+      toast({
+        title: "Copied!",
+        description: "The code has been copied to your clipboard.",
+      });
+    }).catch(err => {
+      console.error('Failed to copy text: ', err);
+      toast({
+        title: "Error",
+        description: "Failed to copy code to clipboard.",
+        variant: "destructive",
+      });
+    });
+  };
+
+  return (
+    <div className={cn("relative", className)}>
+      <pre className="bg-muted p-4 pr-12 rounded-lg text-sm overflow-x-auto">
+        <code>{code}</code>
+      </pre>
+      <Button
+        size="icon"
+        variant="ghost"
+        className="absolute top-2 right-2 h-8 w-8"
+        onClick={copyToClipboard}
+      >
+        {hasCopied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+        <span className="sr-only">Copy code</span>
+      </Button>
+    </div>
+  );
+};
 
 const APITester = ({ endpoint, fields }: { endpoint: string; fields: { name: string; type: string; placeholder: string }[] }) => {
   const [formData, setFormData] = useState<Record<string, any>>({});
