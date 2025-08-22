@@ -9,15 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { enhanceImage } from "@/ai/flows/enhance-image";
 import { objectRemoval } from "@/ai/flows/object-removal";
-import { styleTransfer } from "@/ai/flows/style-transfer";
-import { recolorImage } from "@/ai/flows/image-recoloring";
 import { aiImageManipulation } from "@/ai/flows/ai-image-manipulation";
 
 interface ToolOptionsProps {
   activeTool: Tool;
   imageDataUrl: string | null;
-  styleImageDataUrl: string | null;
-  setStyleImageDataUrl: (url: string | null) => void;
   setImageDataUrl: (url: string | null) => void;
   setIsLoading: (loading: boolean) => void;
   brushSize: number;
@@ -30,8 +26,6 @@ export function ToolOptions({
   imageDataUrl,
   setImageDataUrl,
   setIsLoading,
-  styleImageDataUrl,
-  setStyleImageDataUrl,
   brushSize,
   setBrushSize,
   maskCanvasRef,
@@ -79,15 +73,24 @@ export function ToolOptions({
     }
   };
 
-  const handleStyleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setStyleImageDataUrl(event.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  const getProcessedMask = (): string | undefined => {
+    const canvas = maskCanvasRef.current;
+    if (!canvas) return undefined;
+
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx) return undefined;
+
+    // Create a black background
+    tempCtx.fillStyle = 'black';
+    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+    
+    // Draw the (white) mask from the original mask canvas
+    tempCtx.drawImage(canvas, 0, 0);
+
+    return tempCanvas.toDataURL('image/png');
   };
 
   const renderOptions = () => {
@@ -117,25 +120,15 @@ export function ToolOptions({
             </div>
             <div className="flex gap-2">
                 <Button variant="outline" onClick={clearMask}>Clear Mask</Button>
-                <Button onClick={() => handleAIAction(objectRemoval, { photoDataUri: imageDataUrl, maskDataUri: maskCanvasRef.current?.toDataURL() }, "editedPhotoDataUri")}>Apply</Button>
+                <Button onClick={() => handleAIAction(objectRemoval, { photoDataUri: imageDataUrl, maskDataUri: getProcessedMask() }, "editedPhotoDataUri")}>Apply</Button>
             </div>
           </div>
         );
-      case "style-transfer":
-        return (
-          <div className="flex items-center justify-center gap-8 h-full">
-             {styleImageDataUrl && <img src={styleImageDataUrl} alt="Style" className="h-24 w-24 object-cover rounded-lg border" data-ai-hint="artistic pattern" />}
-            <Input type="file" accept="image/*" onChange={handleStyleImageUpload} className="max-w-xs"/>
-            <Button size="lg" disabled={!styleImageDataUrl} onClick={() => handleAIAction(styleTransfer, { contentImage: imageDataUrl, styleImage: styleImageDataUrl }, "styledImage")}>Apply Style</Button>
-          </div>
-        );
-      case "recoloring":
       case "ai-manipulation":
-        const isRecolor = activeTool === "recoloring";
-        const placeholder = isRecolor ? "e.g., 'make the dress red' or 'colorize the photo'" : "e.g., 'add a cat sitting on the bench'";
-        const actionFn = isRecolor ? recolorImage : aiImageManipulation;
-        const inputKey = isRecolor ? "recolorPrompt" : "instructions";
-        const outputKey = isRecolor ? "recoloredPhotoDataUri" : "editedPhotoDataUri";
+        const placeholder = "e.g., 'add a cat sitting on the bench'";
+        const actionFn = aiImageManipulation;
+        const inputKey = "instructions";
+        const outputKey = "editedPhotoDataUri";
 
         return (
           <div className="flex items-center gap-4 h-full">

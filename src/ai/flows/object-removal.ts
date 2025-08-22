@@ -20,7 +20,7 @@ const ObjectRemovalInputSchema = z.object({
   maskDataUri: z
     .string()
     .describe(
-      "A mask highlighting the objects to remove, as a data URI that must include a MIME type and use Base64 encoding.  The mask should have the same dimensions as the photo. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "A mask highlighting the objects to remove, as a data URI that must include a MIME type and use Base64 encoding.  The mask should have the same dimensions as the photo. The mask should be black and white, where white indicates the area to remove. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
 });
 export type ObjectRemovalInput = z.infer<typeof ObjectRemovalInputSchema>;
@@ -46,7 +46,7 @@ const objectRemovalFlow = ai.defineFlow(
       prompt: [
         {media: {url: input.photoDataUri}},
         {media: {url: input.maskDataUri}},
-        {text: 'Remove the objects specified by the mask.'},
+        {text: 'Remove the objects specified by the white areas in the mask image. The mask is black and white. The white area is the area to be removed.'},
       ],
       config: {
         responseModalities: ['TEXT', 'IMAGE'],

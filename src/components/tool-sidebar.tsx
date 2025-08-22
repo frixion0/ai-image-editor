@@ -4,8 +4,6 @@ import React from "react";
 import {
   Wand2,
   Eraser,
-  Palette,
-  Paintbrush,
   Sparkles,
   Download,
   Trash2,
@@ -29,8 +27,6 @@ interface ToolSidebarProps {
 const tools: ToolDefinition[] = [
   { id: "enhance", name: "Enhance", icon: Wand2 },
   { id: "object-removal", name: "Object Removal", icon: Eraser },
-  { id: "style-transfer", name: "Style Transfer", icon: Paintbrush },
-  { id: "recoloring", name: "Recoloring", icon: Palette },
   { id: "ai-manipulation", name: "AI Manipulation", icon: Sparkles },
 ];
 

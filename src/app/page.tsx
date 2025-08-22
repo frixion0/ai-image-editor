@@ -13,7 +13,6 @@ import type { Tool } from "@/lib/types";
 export default function Home() {
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
   const [originalImageDataUrl, setOriginalImageDataUrl] = useState<string | null>(null);
-  const [styleImageDataUrl, setStyleImageDataUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTool, setActiveTool] = useState<Tool>("enhance");
   const [brushSize, setBrushSize] = useState(40);
@@ -30,7 +29,6 @@ export default function Home() {
   const handleReset = useCallback(() => {
     setImageDataUrl(null);
     setOriginalImageDataUrl(null);
-    setStyleImageDataUrl(null);
     setActiveTool('enhance');
   }, []);
 
@@ -80,8 +78,6 @@ export default function Home() {
                     imageDataUrl={imageDataUrl}
                     setImageDataUrl={setImageDataUrl}
                     setIsLoading={setIsLoading}
-                    styleImageDataUrl={styleImageDataUrl}
-                    setStyleImageDataUrl={setStyleImageDataUrl}
                     brushSize={brushSize}
                     setBrushSize={setBrushSize}
                     maskCanvasRef={maskCanvasRef}
