@@ -38,6 +38,7 @@ export function ToolOptions({
     input: any,
     outputKey: string
   ) => {
+    if (!imageDataUrl) return;
     setIsLoading(true);
     try {
       const result = await action(input);
@@ -49,6 +50,10 @@ export function ToolOptions({
         });
       } else if (result && result[outputKey]) {
         setImageDataUrl(result[outputKey]);
+        // Clear the mask after a successful operation
+        if (activeTool === 'object-removal') {
+          clearMask();
+        }
       } else {
         throw new Error("AI operation failed to return an image.");
       }
@@ -77,6 +82,21 @@ export function ToolOptions({
     const canvas = maskCanvasRef.current;
     if (!canvas) return undefined;
 
+    // Check if the mask is empty
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return undefined;
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const hasDrawing = Array.from(imageData.data).some(channel => channel !== 0);
+
+    if (!hasDrawing) {
+      toast({
+        title: "Empty Mask",
+        description: "Please mark the areas you want to remove before applying.",
+        variant: "destructive",
+      });
+      return undefined;
+    }
+
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = canvas.width;
     tempCanvas.height = canvas.height;
@@ -92,6 +112,13 @@ export function ToolOptions({
 
     return tempCanvas.toDataURL('image/png');
   };
+
+  const onObjectRemovalApply = () => {
+    const maskDataUri = getProcessedMask();
+    if (maskDataUri) {
+      handleAIAction(objectRemoval, { photoDataUri: imageDataUrl, maskDataUri }, "editedPhotoDataUri");
+    }
+  }
 
   const renderOptions = () => {
     switch (activeTool) {
@@ -120,7 +147,7 @@ export function ToolOptions({
             </div>
             <div className="flex gap-2">
                 <Button variant="outline" onClick={clearMask}>Clear Mask</Button>
-                <Button onClick={() => handleAIAction(objectRemoval, { photoDataUri: imageDataUrl, maskDataUri: getProcessedMask() }, "editedPhotoDataUri")}>Apply</Button>
+                <Button onClick={onObjectRemovalApply}>Apply</Button>
             </div>
           </div>
         );
