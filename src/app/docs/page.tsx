@@ -257,21 +257,23 @@ export default function DocsPage() {
                         <li><span className="font-semibold">photoDataUri</span> (string, required): A data URI of the image to enhance.</li>
                     </ul>
                   </div>
-                  <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="item-1">
-                      <AccordionTrigger className="text-sm font-semibold">Example Usage</AccordionTrigger>
-                      <AccordionContent>
+                  <div className="space-y-4">
+                    <h3 className="font-semibold mb-2">Example</h3>
+                    <div>
                         <h4 className="font-semibold text-xs mb-2 uppercase text-muted-foreground">Code (JavaScript Fetch)</h4>
                         <CodeBlock code={enhanceExample} />
-                         <h4 className="font-semibold text-xs mt-4 mb-2 uppercase text-muted-foreground">Success Response (200)</h4>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold text-xs mt-4 mb-2 uppercase text-muted-foreground">Success Response (200)</h4>
                         <CodeBlock code={enhanceSuccessResponse} className="json" />
-                         <h4 className="font-semibold text-xs mt-4 mb-2 uppercase text-muted-foreground">Error Response (500)</h4>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold text-xs mt-4 mb-2 uppercase text-muted-foreground">Error Response (500)</h4>
                         <CodeBlock code={enhanceErrorResponse} className="json" />
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
+                    </div>
+                  </div>
                   <div>
-                    <h3 className="font-semibold mb-2">API Tester</h3>
+                    <h3 className="font-semibold mt-8 mb-4">API Tester</h3>
                     <APITester endpoint="enhance" fields={[{ name: 'photoDataUri', type: 'file', placeholder: '' }]} />
                   </div>
                 </CardContent>
@@ -298,22 +300,24 @@ export default function DocsPage() {
                             <li><span className="font-semibold">instructions</span> (string, required): Text description of the manipulation to perform.</li>
                         </ul>
                     </div>
-                  <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="item-1">
-                      <AccordionTrigger className="text-sm font-semibold">Example Usage</AccordionTrigger>
-                      <AccordionContent>
+                  <div className="space-y-4">
+                    <h3 className="font-semibold mb-2">Example</h3>
+                    <div>
                         <h4 className="font-semibold text-xs mb-2 uppercase text-muted-foreground">Code (JavaScript Fetch)</h4>
                         <CodeBlock code={manipulateExample} />
+                    </div>
+                    <div>
                         <h4 className="font-semibold text-xs mt-4 mb-2 uppercase text-muted-foreground">Success Response (200)</h4>
                         <CodeBlock code={manipulateSuccessResponse} className="json" />
+                    </div>
+                    <div>
                         <h4 className="font-semibold text-xs mt-4 mb-2 uppercase text-muted-foreground">Error Response (500)</h4>
                         <CodeBlock code={manipulateErrorResponse} className="json" />
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
+                    </div>
+                  </div>
 
                   <div>
-                    <h3 className="font-semibold mb-2">API Tester</h3>
+                    <h3 className="font-semibold mt-8 mb-4">API Tester</h3>
                     <APITester endpoint="manipulate" fields={[
                       { name: 'photoDataUri', type: 'file', placeholder: '' },
                       { name: 'instructions', type: 'textarea', placeholder: 'e.g., "add a hat on the person"' }
