@@ -137,17 +137,17 @@ export function ToolOptions({
         );
       case "object-removal":
         return (
-          <div className="grid grid-cols-3 gap-4 items-center h-full">
-            <div className="col-span-2 flex items-center gap-4">
-              <Label htmlFor="brush-size" className="min-w-fit">Brush Size</Label>
-              <Slider
-                id="brush-size"
-                min={1}
-                max={100}
-                step={1}
-                value={[brushSize]}
-                onValueChange={(value) => setBrushSize(value[0])}
-              />
+          <div className="flex items-center justify-between h-full w-full gap-8">
+            <div className="flex-grow flex items-center gap-4">
+                <Label htmlFor="brush-size" className="min-w-fit">Brush Size</Label>
+                <Slider
+                  id="brush-size"
+                  min={1}
+                  max={100}
+                  step={1}
+                  value={[brushSize]}
+                  onValueChange={(value) => setBrushSize(value[0])}
+                />
             </div>
             <div className="flex gap-2">
                 <Button variant="outline" onClick={clearMask}>Clear Mask</Button>
