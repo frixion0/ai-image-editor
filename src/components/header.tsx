@@ -39,9 +39,6 @@ export function Header() {
       </Link>
       <div className="flex items-center gap-4">
         <Button variant="ghost" asChild>
-            <Link href="/video">Video Generation</Link>
-        </Button>
-        <Button variant="ghost" asChild>
             <Link href="/docs">API Docs</Link>
         </Button>
       </div>
