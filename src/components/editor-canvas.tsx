@@ -116,13 +116,12 @@ export function EditorCanvas({
     setIsDrawing(true);
     const pos = getMousePos(e);
     setLastPos(pos);
-    
-    // Start drawing immediately
-    const event = new MouseEvent('mousemove', {
-      clientX: e.clientX,
-      clientY: e.clientY,
-    });
-    e.currentTarget.dispatchEvent(event);
+
+    // Draw the first dot
+    maskCtx.beginPath();
+    maskCtx.fillStyle = "rgba(255, 255, 255, 0.7)";
+    maskCtx.arc(pos.x, pos.y, brushSize / 2, 0, Math.PI * 2);
+    maskCtx.fill();
   };
   
   const stopDrawing = () => {
