@@ -91,22 +91,6 @@ export function ToolSidebar({
             <p>Change Image</p>
           </TooltipContent>
         </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-14 w-14 text-destructive hover:text-destructive"
-              onClick={handleReset}
-              aria-label="Reset and start over"
-            >
-              <Trash2 className="h-6 w-6" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            <p>Start Over</p>
-          </TooltipContent>
-        </Tooltip>
       </div>
     </aside>
   );
