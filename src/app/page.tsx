@@ -9,8 +9,6 @@ import { ToolOptions } from "@/components/tool-options";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import type { Tool } from "@/lib/types";
-import { Button } from "@/components/ui/button";
-import { Undo, Redo } from "lucide-react";
 
 export default function Home() {
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);

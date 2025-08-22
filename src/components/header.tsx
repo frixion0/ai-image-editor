@@ -1,4 +1,6 @@
 import React from "react";
+import Link from 'next/link';
+import { Button } from "@/components/ui/button";
 
 const Logo = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -30,10 +32,15 @@ const Logo = (props: React.SVGProps<SVGSVGElement>) => (
 
 export function Header() {
   return (
-    <header className="absolute top-0 left-0 right-0 z-20 flex h-16 items-center border-b bg-background/80 px-4 backdrop-blur-sm">
-      <div className="flex items-center gap-2">
+    <header className="absolute top-0 left-0 right-0 z-20 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-sm">
+      <Link href="/" className="flex items-center gap-2">
         <Logo className="text-foreground" />
         <h1 className="text-lg font-semibold text-foreground">Imagia AI</h1>
+      </Link>
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" asChild>
+            <Link href="/docs">API Docs</Link>
+        </Button>
       </div>
     </header>
   );
