@@ -54,13 +54,21 @@ const CodeBlock = ({ code, className }: { code: string, className?: string }) =>
   );
 };
 
-const APITester = ({ endpoint, fields, baseUrl }: { endpoint: string; fields: { name: string; type: string; placeholder: string }[]; baseUrl: string; }) => {
+const APITester = ({ endpoint, fields, baseUrl, fullApiUrl: initialFullApiUrl }: { endpoint: string; fields: { name: string; type: string; placeholder: string }[]; baseUrl: string; fullApiUrl?: string; }) => {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
+  const [fullApiUrl, setFullApiUrl] = useState(initialFullApiUrl || `${baseUrl}/api/${endpoint}`);
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    if (!initialFullApiUrl) {
+        setFullApiUrl(`${baseUrl}/api/${endpoint}`);
+    }
+  }, [baseUrl, endpoint, initialFullApiUrl]);
+
 
   const handleFileChange = (dataUrl: string) => {
     setImageDataUrl(dataUrl);
@@ -78,7 +86,7 @@ const APITester = ({ endpoint, fields, baseUrl }: { endpoint: string; fields: { 
     setApiError(null);
 
     try {
-      const response = await fetch(`${baseUrl}/api/${endpoint}`, {
+      const response = await fetch(fullApiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,7 +123,15 @@ const APITester = ({ endpoint, fields, baseUrl }: { endpoint: string; fields: { 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <p className="font-mono text-sm">POST {baseUrl}/api/{endpoint}</p>
+         <div className="space-y-2">
+            <label htmlFor="apiUrl" className="text-sm font-medium">API Endpoint URL</label>
+            <Input
+                id="apiUrl"
+                value={fullApiUrl}
+                onChange={(e) => setFullApiUrl(e.target.value)}
+                placeholder="Enter the full API URL"
+            />
+        </div>
         
         <Card>
           <CardContent className="pt-6">
@@ -190,6 +206,8 @@ export default function DocsPage() {
     }
   }, []);
 
+  const manipulateUrl = 'https://6000-firebase-studio-1755789802422.cluster-73qgvk7hjjadkrjeyexca5ivva.cloudworkstations.dev/api/manipulate';
+
   const enhanceExample = `fetch('${baseUrl}/api/enhance', {
   method: 'POST',
   headers: {
@@ -209,7 +227,7 @@ export default function DocsPage() {
   "error": "Failed to enhance image"
 }`;
 
-  const manipulateExample = `fetch('${baseUrl}/api/manipulate', {
+  const manipulateExample = `fetch('${manipulateUrl}', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -298,7 +316,7 @@ export default function DocsPage() {
                 <CardContent className="space-y-6">
                   <div>
                     <h3 className="font-semibold mb-2">HTTP Request</h3>
-                    <p className="font-mono text-sm bg-muted p-2 rounded">POST /api/manipulate</p>
+                    <p className="font-mono text-sm bg-muted p-2 rounded">POST {manipulateUrl}</p>
                   </div>
                     <div>
                         <h3 className="font-semibold mb-2">Request Body (JSON)</h3>
@@ -325,10 +343,15 @@ export default function DocsPage() {
 
                   <div>
                     <h3 className="font-semibold mt-8 mb-4">API Tester</h3>
-                    <APITester endpoint="manipulate" fields={[
-                      { name: 'photoDataUri', type: 'file', placeholder: '' },
-                      { name: 'instructions', type: 'textarea', placeholder: 'e.g., "add a hat on the person"' }
-                    ]} baseUrl={baseUrl} />
+                    <APITester 
+                      endpoint="manipulate" 
+                      fields={[
+                        { name: 'photoDataUri', type: 'file', placeholder: '' },
+                        { name: 'instructions', type: 'textarea', placeholder: 'e.g., "add a hat on the person"' }
+                      ]} 
+                      baseUrl={baseUrl}
+                      fullApiUrl={manipulateUrl}
+                    />
                   </div>
                 </CardContent>
               </Card>
