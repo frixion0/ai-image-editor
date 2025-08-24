@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Imagia AI - API Examples</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #F0F2F5;
+      font-family: Inter, sans-serif;
+    }
+    .card {
+      background-color: white;
+      border-radius: 0.5rem;
+      border: 1px solid #E5E7EB;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.375rem;
+      font-weight: 500;
+      padding: 0.5rem 1rem;
+      transition: background-color 0.2s;
+    }
+    .btn-primary {
+      background-color: #29ABE2;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #2397c9;
+    }
+    .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .input {
+        display: block;
+        width: 100%;
+        border-radius: 0.375rem;
+        border: 1px solid #D1D5DB;
+        padding: 0.5rem 0.75rem;
+    }
+    .code-block {
+        background-color: #F3F4F6;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+        font-family: monospace;
+        position: relative;
+    }
+    .copy-btn {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background-color: #E5E7EB;
+        border: none;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        cursor: pointer;
+    }
+    .copy-btn:hover {
+        background-color: #D1D5DB;
+    }
+  </style>
+</head>
+<body class="text-gray-800">
+
+  <header class="bg-white/80 backdrop-blur-sm border-b sticky top-0 z-10">
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 16.5C20 18.9853 17.9853 21 15.5 21H8.5C6.01472 21 4 18.9853 4 16.5V9.5C4 7.01472 6.01472 5 8.5 5H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                <path d="M12 3L13.1213 7.37868L17.5 8.5L13.1213 9.62132L12 14L10.8787 9.62132L6.5 8.5L10.8787 7.37868L12 3Z" stroke="#29ABE2" fill="#29ABE233" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <h1 class="text-lg font-semibold ml-2">Imagia AI API Examples</h1>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="max-w-5xl mx-auto py-8 px-4">
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold tracking-tight">Imagia AI API</h1>
+      <p class="mt-4 text-lg text-gray-600">
+        Simple HTML examples for integrating our powerful AI image editing capabilities.
+      </p>
+    </div>
+
+    <!-- API Base URL Input -->
+    <div class="card p-6 mb-8">
+        <label for="baseUrl" class="block text-sm font-medium text-gray-700 mb-2">Your Website URL (API Base URL)</label>
+        <input type="text" id="baseUrl" class="input" placeholder="e.g., https://your-website.com">
+        <p class="text-xs text-gray-500 mt-1">Enter the URL of your deployed website. The examples will use this as the base for API calls.</p>
+    </div>
+
+    <!-- Enhance API -->
+    <div id="enhance-section" class="mb-12">
+      <div class="card">
+        <div class="p-6 border-b">
+          <h2 class="text-2xl font-bold">Enhance Image API</h2>
+          <p class="mt-2 text-gray-600">
+            Automatically improve image quality using AI. This endpoint sharpens, denoises, and improves the overall visual appeal of an image.
+          </p>
+        </div>
+        <div class="p-6">
+            <h3 class="font-semibold mb-2">HTTP Request</h3>
+            <p class="font-mono text-sm bg-gray-100 p-2 rounded">POST /api/enhance</p>
+            
+            <h3 class="font-semibold mt-4 mb-2">Example Code</h3>
+            <div class="code-block" id="enhance-code-wrapper">
+                <button class="copy-btn" onclick="copyCode('enhance-code')">Copy</button>
+                <pre><code id="enhance-code">const baseUrl = document.getElementById('baseUrl').value;
+const photoDataUri = 'data:image/jpeg;base64,...'; // Your base64 encoded image
+
+fetch(`${baseUrl}/api/enhance`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ photoDataUri }),
+})
+.then(response => {
+  if (!response.ok) {
+    return response.json().then(err => { throw new Error(err.error) });
+  }
+  return response.json();
+})
+.then(data => console.log('Success:', data.enhancedPhotoDataUri))
+.catch(error => console.error('Error:', error));</code></pre>
+            </div>
+
+            <h3 class="font-semibold mt-6 mb-4">Live Tester</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-4">
+                    <input type="file" id="enhance-file" accept="image/*" class="input">
+                    <button id="enhance-btn" class="btn btn-primary w-full">Test Endpoint</button>
+                </div>
+                <div id="enhance-result-wrapper" class="bg-gray-100 rounded-lg p-4 flex items-center justify-center min-h-[200px]">
+                    <p class="text-gray-500">API response will be shown here</p>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Manipulate API -->
+    <div id="manipulate-section" class="mb-12">
+        <div class="card">
+          <div class="p-6 border-b">
+            <h2 class="text-2xl font-bold">AI Manipulation API</h2>
+            <p class="mt-2 text-gray-600">
+                Manipulate an image based on natural language instructions (e.g., "make the sky blue").
+            </p>
+          </div>
+          <div class="p-6">
+              <h3 class="font-semibold mb-2">HTTP Request</h3>
+              <p class="font-mono text-sm bg-gray-100 p-2 rounded">POST /api/manipulate</p>
+              
+              <h3 class="font-semibold mt-4 mb-2">Example Code</h3>
+              <div class="code-block" id="manipulate-code-wrapper">
+                  <button class="copy-btn" onclick="copyCode('manipulate-code')">Copy</button>
+                  <pre><code id="manipulate-code">const baseUrl = document.getElementById('baseUrl').value;
+const photoDataUri = 'data:image/jpeg;base64,...'; // Your base64 encoded image
+const instructions = 'Make the sky blue';
+
+fetch(`${baseUrl}/api/manipulate`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ photoDataUri, instructions }),
+})
+.then(response => {
+  if (!response.ok) {
+    return response.json().then(err => { throw new Error(err.error) });
+  }
+  return response.json();
+})
+.then(data => console.log('Success:', data.editedPhotoDataUri))
+.catch(error => console.error('Error:', error));</code></pre>
+              </div>
+
+              <h3 class="font-semibold mt-6 mb-4">Live Tester</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div class="space-y-4">
+                      <input type="file" id="manipulate-file" accept="image/*" class="input">
+                      <textarea id="manipulate-instructions" class="input min-h-[100px]" placeholder="e.g., 'add a hat on the person'"></textarea>
+                      <button id="manipulate-btn" class="btn btn-primary w-full">Test Endpoint</button>
+                  </div>
+                  <div id="manipulate-result-wrapper" class="bg-gray-100 rounded-lg p-4 flex items-center justify-center min-h-[200px]">
+                      <p class="text-gray-500">API response will be shown here</p>
+                  </div>
+              </div>
+          </div>
+        </div>
+      </div>
+
+  </main>
+
+  <script>
+    function fileToDataUri(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function showLoading(resultWrapper) {
+        resultWrapper.innerHTML = `
+            <div class="flex flex-col items-center gap-2">
+                <svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p>Processing...</p>
+            </div>`;
+    }
+
+    function showResult(resultWrapper, dataUri) {
+        resultWrapper.innerHTML = `<img src="${dataUri}" alt="API Result" class="rounded-lg max-h-full max-w-full">`;
+    }
+
+    function showError(resultWrapper, error) {
+        resultWrapper.innerHTML = `
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative w-full" role="alert">
+                <strong class="font-bold">Error:</strong>
+                <span class="block sm:inline">${error.message || 'An unknown error occurred.'}</span>
+            </div>`;
+    }
+    
+    function copyCode(elementId) {
+        const codeElement = document.getElementById(elementId);
+        const textToCopy = codeElement.innerText;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            alert('Code copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy code: ', err);
+            alert('Failed to copy code.');
+        });
+    }
+
+    // Enhance API Tester Logic
+    const enhanceBtn = document.getElementById('enhance-btn');
+    const enhanceFile = document.getElementById('enhance-file');
+    const enhanceResultWrapper = document.getElementById('enhance-result-wrapper');
+    
+    enhanceBtn.addEventListener('click', async () => {
+        const baseUrl = document.getElementById('baseUrl').value;
+        if (!baseUrl) {
+            alert('Please enter your Website URL (API Base URL).');
+            return;
+        }
+        if (enhanceFile.files.length === 0) {
+            alert('Please select an image file.');
+            return;
+        }
+
+        enhanceBtn.disabled = true;
+        showLoading(enhanceResultWrapper);
+
+        try {
+            const photoDataUri = await fileToDataUri(enhanceFile.files[0]);
+            const response = await fetch(`${baseUrl}/api/enhance`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ photoDataUri }),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || `HTTP error! status: ${response.status}`);
+            }
+            showResult(enhanceResultWrapper, data.enhancedPhotoDataUri);
+        } catch (error) {
+            showError(enhanceResultWrapper, error);
+        } finally {
+            enhanceBtn.disabled = false;
+        }
+    });
+
+    // Manipulate API Tester Logic
+    const manipulateBtn = document.getElementById('manipulate-btn');
+    const manipulateFile = document.getElementById('manipulate-file');
+    const manipulateInstructions = document.getElementById('manipulate-instructions');
+    const manipulateResultWrapper = document.getElementById('manipulate-result-wrapper');
+
+    manipulateBtn.addEventListener('click', async () => {
+        const baseUrl = document.getElementById('baseUrl').value;
+        if (!baseUrl) {
+            alert('Please enter your Website URL (API Base URL).');
+            return;
+        }
+        if (manipulateFile.files.length === 0) {
+            alert('Please select an image file.');
+            return;
+        }
+        if (!manipulateInstructions.value) {
+            alert('Please enter manipulation instructions.');
+            return;
+        }
+
+        manipulateBtn.disabled = true;
+        showLoading(manipulateResultWrapper);
+
+        try {
+            const photoDataUri = await fileToDataUri(manipulateFile.files[0]);
+            const instructions = manipulateInstructions.value;
+            const response = await fetch(`${baseUrl}/api/manipulate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ photoDataUri, instructions }),
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                 throw new Error(data.error || `HTTP error! status: ${response.status}`);
+            }
+            showResult(manipulateResultWrapper, data.editedPhotoDataUri);
+        } catch (error) {
+            showError(manipulateResultWrapper, error);
+        } finally {
+            manipulateBtn.disabled = false;
+        }
+    });
+
+  </script>
+</body>
+</html>
