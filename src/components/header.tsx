@@ -44,6 +44,9 @@ export function Header() {
          <Button variant="ghost" asChild>
             <a href="/api-examples.html" target="_blank">HTML Examples</a>
         </Button>
+        <Button variant="ghost" asChild>
+            <a href="/image-editor.html" target="_blank">Standalone Editor</a>
+        </Button>
       </div>
     </header>
   );

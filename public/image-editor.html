@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imagia AI - Standalone Editor</title>
+    <style>
+        :root {
+            --background: #F0F2F5;
+            --foreground: #09090B;
+            --card: #FFFFFF;
+            --primary: #29ABE2;
+            --primary-foreground: #FFFFFF;
+            --secondary: #E4E6EB;
+            --muted: #E4E6EB;
+            --muted-foreground: #6F6F6F;
+            --accent: #FFB347;
+            --border: #E4E6EB;
+            --radius: 0.5rem;
+            --font-sans: 'Inter', sans-serif;
+        }
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--background);
+            color: var(--foreground);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1rem;
+            height: 4rem;
+            border-bottom: 1px solid var(--border);
+            background-color: var(--card);
+        }
+        header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        main {
+            flex-grow: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        #image-upload-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 2rem;
+        }
+        #image-upload-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            background-color: var(--card);
+            text-align: center;
+            width: 100%;
+            max-width: 48rem;
+        }
+        #image-upload-box h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 1rem 0 0.5rem;
+        }
+        #image-upload-box p {
+            color: var(--muted-foreground);
+            margin-bottom: 1.5rem;
+        }
+        #editor-container {
+            display: none;
+            flex-grow: 1;
+            flex-direction: row;
+        }
+        #sidebar {
+            width: 5rem;
+            border-right: 1px solid var(--border);
+            background-color: var(--card);
+            display: flex;
+            flex-direction: column;
+            padding: 1rem 0;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .tool-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 4rem;
+            height: 4rem;
+            border-radius: var(--radius);
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .tool-btn.active {
+            background-color: var(--secondary);
+        }
+        .tool-btn:hover:not(.active) {
+            background-color: var(--muted);
+        }
+        .tool-btn svg {
+            width: 1.5rem;
+            height: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+        #sidebar .separator {
+            height: 1px;
+            width: 80%;
+            background-color: var(--border);
+            margin: 1rem 0;
+        }
+        #main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--background);
+        }
+        #canvas-container {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        #canvas-container img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        #loading-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 10;
+        }
+        #options-bar {
+            height: 8rem;
+            border-top: 1px solid var(--border);
+            background-color: var(--card);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #options-content {
+            width: 100%;
+            max-width: 40rem;
+        }
+        .options-panel {
+            display: none;
+        }
+        .options-panel.active {
+            display: block;
+        }
+        .form-group {
+            display: flex;
+            gap: 1rem;
+            width: 100%;
+        }
+        input[type="text"], input[type="file"], button {
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        input[type="text"] {
+            flex-grow: 1;
+        }
+        button {
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+            border-color: var(--primary);
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #error-toast {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            display: none;
+            z-index: 100;
+        }
+        /* Spinner from https://tobiasahlin.com/spinkit/ */
+        .spinner {
+          width: 40px;
+          height: 40px;
+          position: relative;
+        }
+        .double-bounce1, .double-bounce2 {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          background-color: var(--primary);
+          opacity: 0.6;
+          position: absolute;
+          top: 0;
+          left: 0;
+          -webkit-animation: sk-bounce 2.0s infinite ease-in-out;
+          animation: sk-bounce 2.0s infinite ease-in-out;
+        }
+        .double-bounce2 {
+          -webkit-animation-delay: -1.0s;
+          animation-delay: -1.0s;
+        }
+        @-webkit-keyframes sk-bounce {
+          0%, 100% { -webkit-transform: scale(0.0) }
+          50% { -webkit-transform: scale(1.0) }
+        }
+        @keyframes sk-bounce {
+          0%, 100% { 
+            transform: scale(0.0);
+            -webkit-transform: scale(0.0);
+          } 50% { 
+            transform: scale(1.0);
+            -webkit-transform: scale(1.0);
+          }
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <h1>Imagia AI Standalone Editor</h1>
+        <button id="download-btn" style="display: none;">Download</button>
+    </header>
+    <main>
+        <div id="image-upload-container">
+            <div id="image-upload-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 3rem; height: 3rem; color: var(--primary);">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>
+                </svg>
+                <h2>Drag & Drop Your Image</h2>
+                <p>or click below to select a file from your computer</p>
+                <input type="file" id="file-input" accept="image/png, image/jpeg, image/gif" style="display: none;">
+                <button id="select-file-btn">Choose a File</button>
+            </div>
+        </div>
+
+        <div id="editor-container">
+            <div id="sidebar">
+                <button class="tool-btn active" data-tool="enhance" title="Enhance">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m10 14 2 2 2-2"/><path d="m12 16V9"/></svg>
+                </button>
+                <button class="tool-btn" data-tool="ai-manipulation" title="AI Manipulation">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c.3 0 .6.1.8.4l1.8 3.1c.1.2.3.3.5.4l3.1 1.8c.3.2.4.5.4.8s-.1.6-.4.8l-3.1 1.8c-.2.1-.3.3-.4.5l-1.8 3.1c-.2.3-.5.4-.8.4s-.6-.1-.8-.4l-1.8-3.1c-.1-.2-.3-.3-.5-.4l-3.1-1.8c-.3-.2-.4-.5-.4-.8s.1-.6.4-.8l3.1-1.8c.2-.1.3-.3.4-.5l1.8-3.1c.2-.3.5-.4.8-.4z"/><path d="M12 3c.3 0 .6.1.8.4l1.8 3.1c.1.2.3.3.5.4l3.1 1.8c.3.2.4.5.4.8s-.1.6-.4.8l-3.1 1.8c-.2.1-.3.3-.4.5l-1.8 3.1c-.2.3-.5.4-.8.4s-.6-.1-.8-.4l-1.8-3.1c-.1-.2-.3-.3-.5-.4l-3.1-1.8c-.3-.2-.4-.5-.4-.8s.1-.6.4-.8l3.1-1.8c.2-.1.3-.3.4-.5l1.8-3.1c.2-.3.5-.4.8-.4zM19 12c.3 0 .6.1.8.4l1.8 3.1c.1.2.3.3.5.4l3.1 1.8c.3.2.4.5.4.8s-.1.6-.4.8l-3.1 1.8c-.2.1-.3.3-.4.5l-1.8 3.1c-.2.3-.5.4-.8.4s-.6-.1-.8-.4l-1.8-3.1c-.1-.2-.3-.3-.5-.4l-3.1-1.8c-.3-.2-.4-.5-.4-.8s.1-.6.4-.8l3.1-1.8c.2-.1.3-.3.4-.5l1.8-3.1c.2-.3.5-.4.8-.4z"/></svg>
+                </button>
+                <div class="separator" style="margin-top:auto"></div>
+                <button class="tool-btn" id="reset-btn" title="Change Image">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M21 21v-5h-5"/></svg>
+                </button>
+            </div>
+            <div id="main-content">
+                <div id="canvas-container">
+                    <img id="image-preview" src="" alt="Image Preview">
+                    <div id="loading-overlay">
+                        <div class="spinner">
+                          <div class="double-bounce1"></div>
+                          <div class="double-bounce2"></div>
+                        </div>
+                        <p>Applying AI magic...</p>
+                    </div>
+                </div>
+                <div id="options-bar">
+                    <div id="options-content">
+                        <div id="options-enhance" class="options-panel active">
+                            <button id="enhance-btn" style="width: 100%;">Enhance Image</button>
+                        </div>
+                        <div id="options-ai-manipulation" class="options-panel">
+                            <div class="form-group">
+                                <input type="text" id="manipulate-prompt" placeholder="e.g., 'add a cat sitting on the bench'">
+                                <button id="manipulate-btn">Apply</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="error-toast"></div>
+    </main>
+
+    <script>
+        const API_BASE_URL = 'https://9000-firebase-studio-1755789802422.cluster-73qgvk7hjjadkrjeyexca5ivva.cloudworkstations.dev';
+        
+        // State
+        let imageDataUrl = null;
+        let activeTool = 'enhance';
+        
+        // UI Elements
+        const imageUploadContainer = document.getElementById('image-upload-container');
+        const editorContainer = document.getElementById('editor-container');
+        const imagePreview = document.getElementById('image-preview');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const errorToast = document.getElementById('error-toast');
+        const downloadBtn = document.getElementById('download-btn');
+        const resetBtn = document.getElementById('reset-btn');
+
+        // File handling
+        const fileInput = document.getElementById('file-input');
+        const selectFileBtn = document.getElementById('select-file-btn');
+        const uploadBox = document.getElementById('image-upload-box');
+
+        selectFileBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => handleFile(e.target.files[0]));
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadBox.addEventListener(eventName, preventDefaults, false);
+        });
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        uploadBox.addEventListener('drop', (e) => {
+            handleFile(e.dataTransfer.files[0]);
+        }, false);
+
+
+        function handleFile(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                showError('Please select a valid image file.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                imageDataUrl = e.target.result;
+                imagePreview.src = imageDataUrl;
+                imageUploadContainer.style.display = 'none';
+                editorContainer.style.display = 'flex';
+                downloadBtn.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Tool selection
+        const toolBtns = document.querySelectorAll('.tool-btn');
+        toolBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tool = btn.dataset.tool;
+                if (!tool) return;
+                
+                activeTool = tool;
+                
+                toolBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                document.querySelectorAll('.options-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(`options-${tool}`).classList.add('active');
+            });
+        });
+
+        // API Calls
+        const enhanceBtn = document.getElementById('enhance-btn');
+        const manipulateBtn = document.getElementById('manipulate-btn');
+        const manipulatePrompt = document.getElementById('manipulate-prompt');
+        
+        enhanceBtn.addEventListener('click', async () => {
+            setLoading(true);
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/enhance`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ photoDataUri: imageDataUrl }),
+                });
+                const data = await response.json();
+                if (!response.ok || data.error) throw new Error(data.error || 'Failed to enhance image');
+                updateImage(data.enhancedPhotoDataUri);
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        });
+        
+        manipulateBtn.addEventListener('click', async () => {
+            const instructions = manipulatePrompt.value;
+            if (!instructions) {
+                showError('Please enter manipulation instructions.');
+                return;
+            }
+            setLoading(true);
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/manipulate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ photoDataUri: imageDataUrl, instructions }),
+                });
+                const data = await response.json();
+                if (!response.ok || data.error) throw new Error(data.error || 'Failed to manipulate image');
+                updateImage(data.editedPhotoDataUri);
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        });
+        
+        // Utility Functions
+        function setLoading(isLoading) {
+            loadingOverlay.style.display = isLoading ? 'flex' : 'none';
+            document.querySelectorAll('button, input').forEach(el => el.disabled = isLoading);
+        }
+
+        function updateImage(newDataUrl) {
+            imageDataUrl = newDataUrl;
+            imagePreview.src = newDataUrl;
+        }
+
+        function showError(message) {
+            errorToast.textContent = message;
+            errorToast.style.display = 'block';
+            setTimeout(() => {
+                errorToast.style.display = 'none';
+            }, 5000);
+        }
+        
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.href = imageDataUrl;
+            link.download = `imagia-ai-edit-${Date.now()}.png`;
+            link.click();
+        });
+        
+        resetBtn.addEventListener('click', () => {
+            imageDataUrl = null;
+            imagePreview.src = '';
+            editorContainer.style.display = 'none';
+            imageUploadContainer.style.display = 'flex';
+            downloadBtn.style.display = 'none';
+            fileInput.value = ''; // Reset file input
+        });
+
+    </script>
+</body>
+</html>
