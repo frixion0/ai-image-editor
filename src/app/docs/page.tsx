@@ -7,12 +7,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Copy, Check } from 'lucide-react';
+import { Loader2, Copy, Check, Terminal, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from '@/components/image-upload';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal } from 'lucide-react';
 
 const CodeBlock = ({ code, className }: { code: string, className?: string }) => {
   const [hasCopied, setHasCopied] = useState(false);
@@ -189,6 +188,67 @@ const APITester = ({ endpoint, fields, fullApiUrl: initialFullApiUrl }: { endpoi
   );
 };
 
+const WebhookTester = ({ botUsername }: { botUsername: string }) => {
+    const [isLoading, setIsLoading] = useState(false);
+    const { toast } = useToast();
+
+    const handleSetupWebhook = async () => {
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/telegram/set-webhook', { method: 'POST' });
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.error || 'Failed to set webhook');
+            }
+            toast({
+                title: "Webhook Setup Successful!",
+                description: result.message,
+            });
+        } catch (error: any) {
+            toast({
+                title: "Webhook Setup Failed",
+                description: error.message,
+                variant: "destructive",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="space-y-4">
+            <div>
+                <h3 className="font-semibold mb-2">1. Auto-Setup Webhook</h3>
+                <p className="text-sm text-muted-foreground mb-2">
+                    Click the button below to automatically configure your Telegram bot's webhook to point to this website.
+                </p>
+                <Button onClick={handleSetupWebhook} disabled={isLoading}>
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    Set Webhook
+                </Button>
+            </div>
+            <div>
+                <h3 className="font-semibold mb-2">2. Test the Bot</h3>
+                <p className="text-sm text-muted-foreground mb-2">
+                    Open Telegram and send a photo with a caption to your bot to test the image manipulation.
+                </p>
+                <Button asChild>
+                    <a href={`https://t.me/${botUsername}`} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        Open Telegram
+                    </a>
+                </Button>
+            </div>
+             <div>
+                <h3 className="font-semibold mb-2">3. How it Works</h3>
+                <p className="text-sm text-muted-foreground">
+                    The webhook is an API endpoint at <code className="bg-muted px-1 py-0.5 rounded">/api/telegram/webhook</code>. When you send a message to your bot, Telegram sends a POST request to this URL with the message details. The application then processes the photo and instructions, edits the image using AI, and sends it back to you on Telegram.
+                </p>
+            </div>
+        </div>
+    );
+};
+
 
 export default function DocsPage() {
   const deploymentUrl = 'https://ai-image-editor-eta.vercel.app';
@@ -196,6 +256,7 @@ export default function DocsPage() {
   const enhanceUrl = `${deploymentUrl}/api/enhance`;
   const manipulateUrl = `${deploymentUrl}/api/manipulate`;
   const telegramWebhookUrl = `${deploymentUrl}/api/telegram/webhook`;
+  const telegramBotUsername = 'ImagiaAI_bot'; // Replace with your bot's username if different
 
   const enhanceExample = `fetch('${enhanceUrl}', {
   method: 'POST',
@@ -236,33 +297,6 @@ export default function DocsPage() {
   "error": "The AI failed to generate an image. This might be due to safety settings or other restrictions. Please try a different prompt."
 }`;
 
-  const setWebhookCurl = `curl -F "url=${telegramWebhookUrl}" "https://api.telegram.org/bot<YOUR_TELEGRAM_BOT_TOKEN>/setWebhook"`;
-  
-  const webhookTestPayload = `{
-  "update_id": 12345678,
-  "message": {
-    "message_id": 123,
-    "from": {
-      "id": 1234567,
-      "is_bot": false,
-      "first_name": "John",
-      "last_name": "Doe",
-      "username": "johndoe",
-      "language_code": "en"
-    },
-    "chat": {
-      "id": 1234567,
-      "first_name": "John",
-      "last_name": "Doe",
-      "username": "johndoe",
-      "type": "private"
-    },
-    "date": 1678886400,
-    "text": "Hello bot!"
-  }
-}`;
-
-
   return (
     <div className="flex h-screen w-screen flex-col bg-background font-sans text-foreground">
       <Header />
@@ -277,7 +311,7 @@ export default function DocsPage() {
             <TabsList className="mb-4">
               <TabsTrigger value="enhance">Enhance Image</TabsTrigger>
               <TabsTrigger value="ai-manipulation">AI Manipulation</TabsTrigger>
-              <TabsTrigger value="telegram-webhook">Telegram Webhook</TabsTrigger>
+              <TabsTrigger value="telegram-webhook">Telegram Bot</TabsTrigger>
             </TabsList>
             
             <TabsContent value="enhance">
@@ -376,26 +410,13 @@ export default function DocsPage() {
              <TabsContent value="telegram-webhook">
               <Card>
                 <CardHeader>
-                  <CardTitle>Telegram Bot Webhook</CardTitle>
+                  <CardTitle>Telegram Bot Integration</CardTitle>
                   <CardDescription>
-                    Use our AI image editor directly from Telegram. Send a photo with a caption to the bot.
+                    Set up and test your Telegram bot to use the AI image editor directly from the chat.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div>
-                    <h3 className="font-semibold mb-2">Webhook URL</h3>
-                    <p className="font-mono text-sm bg-muted p-2 rounded">{telegramWebhookUrl}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2">Setup Command</h3>
-                    <p className="text-sm text-muted-foreground mb-2">Run the following command in your terminal to set the webhook for your bot. Replace `&lt;YOUR_TELEGRAM_BOT_TOKEN&gt;` with your actual bot token.</p>
-                    <CodeBlock code={setWebhookCurl} />
-                  </div>
-                   <div>
-                    <h3 className="font-semibold mb-2">Test Webhook</h3>
-                     <p className="text-sm text-muted-foreground mb-2">You can test the endpoint by sending a POST request with a payload like the one below.</p>
-                     <CodeBlock code={webhookTestPayload} className="json" />
-                  </div>
+                    <WebhookTester botUsername={telegramBotUsername} />
                 </CardContent>
               </Card>
             </TabsContent>
