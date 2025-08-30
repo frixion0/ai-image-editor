@@ -5,7 +5,7 @@ import {googleAI} from '@genkit-ai/googleai';
 // For personal or internal projects, this can simplify deployment.
 // You should replace "YOUR_API_KEY_HERE" with your actual Gemini API key.
 // To get a key, visit https://makersuite.google.com/
-const GEMINI_API_KEY = "YOUR_API_KEY_HERE";
+const GEMINI_API_KEY = "AIzaSyBkGYL07sNd1pxy7F4Jle1CBiLH_tzZwlY";
 
 if (!GEMINI_API_KEY || GEMINI_API_KEY === "YOUR_API_KEY_HERE") {
   console.warn("Gemini API key is not configured. Please add it to src/ai/genkit.ts");
