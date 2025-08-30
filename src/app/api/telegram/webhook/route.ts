@@ -2,6 +2,7 @@
 // src/app/api/telegram/webhook/route.ts
 import { NextResponse } from 'next/server';
 import { aiImageManipulation } from '@/ai/flows/ai-image-manipulation';
+import type { PhotoSize } from 'node-telegram-bot-api';
 
 const TELEGRAM_BOT_TOKEN = '8385588826:AAFzWYNYppcjjwiHnPjK2fTtl4BqJzhcxR8';
 const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
@@ -74,54 +75,65 @@ function getMimeTypeFromPath(filePath: string): string {
     }
 }
 
+async function processImageEditing(chatId: number, instructions: string, photoArray: PhotoSize[]) {
+    // Get the highest resolution photo
+    const photo = photoArray[photoArray.length - 1];
+    const fileId = photo.file_id;
+
+    await sendMessage(chatId, 'Got it! Processing your image now. This might take a moment...');
+
+    // Get file path from Telegram
+    const fileInfo = await getFile(fileId);
+    const fileUrl = `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileInfo.file_path}`;
+
+    // Download the image and convert to base64 data URI
+    const imageResponse = await fetch(fileUrl);
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to download image from Telegram. Status: ${imageResponse.status}`);
+    }
+    const imageBuffer = await imageResponse.arrayBuffer();
+    const imageBase64 = Buffer.from(imageBuffer).toString('base64');
+    
+    // Determine MIME type from file path to avoid "application/octet-stream"
+    const mimeType = getMimeTypeFromPath(fileInfo.file_path);
+    const photoDataUri = `data:${mimeType};base64,${imageBase64}`;
+
+    // Call your AI flow
+    const result = await aiImageManipulation({
+      photoDataUri,
+      instructions,
+    });
+
+    if (result.editedPhotoDataUri) {
+      await sendPhoto(chatId, result.editedPhotoDataUri, `Here's your edited image!`);
+    } else {
+      await sendMessage(chatId, `Sorry, I couldn't edit the image. Error: ${result.error}`);
+    }
+}
+
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    // Check for a message with a photo and a caption
-    if (body.message && body.message.photo && body.message.caption) {
-      const message = body.message;
-      const chatId = message.chat.id;
-      const instructions = message.caption;
-      
-      // Get the highest resolution photo
-      const photo = message.photo[message.photo.length - 1];
-      const fileId = photo.file_id;
-
-      await sendMessage(chatId, 'Got it! Processing your image now. This might take a moment...');
-
-      // Get file path from Telegram
-      const fileInfo = await getFile(fileId);
-      const fileUrl = `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileInfo.file_path}`;
-
-      // Download the image and convert to base64 data URI
-      const imageResponse = await fetch(fileUrl);
-      if (!imageResponse.ok) {
-        throw new Error(`Failed to download image from Telegram. Status: ${imageResponse.status}`);
-      }
-      const imageBuffer = await imageResponse.arrayBuffer();
-      const imageBase64 = Buffer.from(imageBuffer).toString('base64');
-      
-      // Determine MIME type from file path to avoid "application/octet-stream"
-      const mimeType = getMimeTypeFromPath(fileInfo.file_path);
-      const photoDataUri = `data:${mimeType};base64,${imageBase64}`;
-
-      // Call your AI flow
-      const result = await aiImageManipulation({
-        photoDataUri,
-        instructions,
-      });
-
-      if (result.editedPhotoDataUri) {
-        await sendPhoto(chatId, result.editedPhotoDataUri, `Here's your edited image!`);
-      } else {
-        await sendMessage(chatId, `Sorry, I couldn't edit the image. Error: ${result.error}`);
-      }
-    } else if (body.message && body.message.text) {
+    if (body.message) {
         const message = body.message;
         const chatId = message.chat.id;
-        await sendMessage(chatId, 'Hello! Please send me a photo with a caption describing how you want to edit it.');
+
+        // Case 1: Photo with a caption
+        if (message.photo && message.caption) {
+            await processImageEditing(chatId, message.caption, message.photo);
+        
+        // Case 2: Reply to a photo with text instructions
+        } else if (message.text && message.reply_to_message && message.reply_to_message.photo) {
+            await processImageEditing(chatId, message.text, message.reply_to_message.photo);
+
+        // Case 3: Just a text message (or other unhandled message)
+        } else if (message.text) {
+            await sendMessage(chatId, 'Hello! Please send me a photo with a caption describing how you want to edit it, or reply to a photo with your instructions.');
+        } else {
+            console.warn('Received an unhandled message type:', message);
+        }
     } else {
          console.warn('Received an unhandled update type:', body);
     }
