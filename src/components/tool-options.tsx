@@ -4,7 +4,7 @@ import React from "react";
 import type { Tool } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { enhanceImage } from "@/ai/flows/enhance-image";
 import { aiImageManipulation } from "@/ai/flows/ai-image-manipulation";
 
@@ -61,8 +61,8 @@ export function ToolOptions({
     switch (activeTool) {
       case "enhance":
         return (
-          <div className="flex flex-col items-center justify-center h-full">
-            <p className="text-muted-foreground mb-4">Automatically improve image quality using AI</p>
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <p className="text-muted-foreground text-sm text-center">Automatically improve image quality using AI.</p>
             <Button size="lg" onClick={() => {
               if (imageDataUrl) {
                 handleAIAction(enhanceImage, { photoDataUri: imageDataUrl }, "enhancedPhotoDataUri")
@@ -79,18 +79,19 @@ export function ToolOptions({
         const outputKey = "editedPhotoDataUri";
 
         return (
-          <div className="flex items-center gap-4 h-full">
-            <Input
+          <div className="flex flex-col gap-4 h-full">
+             <p className="text-muted-foreground text-sm">Describe the changes you want to make to the image.</p>
+            <Textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder={placeholder}
-              className="flex-grow"
+              className="flex-grow min-h-[120px]"
             />
             <Button onClick={() => {
               if (imageDataUrl) {
                 handleAIAction(actionFn, { photoDataUri: imageDataUrl, [inputKey]: prompt }, outputKey)
               }
-            }}>Apply</Button>
+            }}>Apply Manipulation</Button>
           </div>
         );
       default:

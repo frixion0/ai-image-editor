@@ -9,6 +9,7 @@ import { ToolOptions } from "@/components/tool-options";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import type { Tool } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
@@ -50,32 +51,37 @@ export default function Home() {
         <Header />
         <main className="flex flex-1 pt-16 overflow-hidden">
           {imageDataUrl ? (
-            <>
+            <div className="flex flex-1">
               <ToolSidebar
                 activeTool={activeTool}
                 setActiveTool={setActiveTool}
                 handleDownload={handleDownload}
                 handleReset={handleReset}
               />
-              <div className="flex flex-1 flex-col pl-20">
-                <div className="flex-1 p-4 flex gap-4">
-                   <div className="flex-1 flex flex-col gap-4">
+              <div className="flex flex-1 pl-20">
+                <div className="flex-1 p-4 flex items-center justify-center">
                     <EditorCanvas
                       imageDataUrl={imageDataUrl}
                       isLoading={isLoading}
                     />
-                   </div>
                 </div>
-                <div className="h-40 border-t bg-background p-4">
-                  <ToolOptions
-                    activeTool={activeTool}
-                    imageDataUrl={imageDataUrl}
-                    updateImageDataUrl={setImageDataUrl}
-                    setIsLoading={setIsLoading}
-                  />
-                </div>
+                <aside className="w-80 border-l bg-card p-4">
+                    <Card className="h-full border-0 shadow-none">
+                        <CardHeader>
+                            <CardTitle className="capitalize">{activeTool.replace('-', ' ')} Options</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ToolOptions
+                                activeTool={activeTool}
+                                imageDataUrl={imageDataUrl}
+                                updateImageDataUrl={setImageDataUrl}
+                                setIsLoading={setIsLoading}
+                            />
+                        </CardContent>
+                    </Card>
+                </aside>
               </div>
-            </>
+            </div>
           ) : (
             <ImageUpload onImageUpload={handleImageUpload} setIsLoading={setIsLoading} />
           )}

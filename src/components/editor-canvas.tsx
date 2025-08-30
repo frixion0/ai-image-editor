@@ -44,7 +44,6 @@ export function EditorCanvas({
       canvas.width = image.width;
       canvas.height = image.height;
 
-      // We set the canvas style to scale it down, but keep the drawing resolution sharp
       canvas.style.width = `${scaledWidth}px`;
       canvas.style.height = `${scaledHeight}px`;
 
@@ -55,9 +54,14 @@ export function EditorCanvas({
 
   useEffect(() => {
     drawImage();
-    window.addEventListener('resize', drawImage);
+    const resizeObserver = new ResizeObserver(drawImage);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
     return () => {
-      window.removeEventListener('resize', drawImage);
+      if (containerRef.current) {
+        resizeObserver.unobserve(containerRef.current);
+      }
     };
   }, [drawImage]);
 
