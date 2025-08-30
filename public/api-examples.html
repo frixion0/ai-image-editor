@@ -3,119 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Imagia AI - API Example</title>
+    <title>Imagia AI API Example</title>
     <style>
-        body { font-family: sans-serif; line-height: 1.6; padding: 2rem; background-color: #f8f9fa; color: #212529; }
-        .container { max-width: 800px; margin: auto; background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1, h2 { color: #007bff; }
-        h1 { border-bottom: 2px solid #dee2e6; padding-bottom: 0.5rem; margin-bottom: 1rem; }
-        h2 { margin-top: 2rem; }
-        form { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1rem; }
-        label { font-weight: bold; }
-        input[type="file"], input[type="text"] { padding: 0.5rem; border: 1px solid #ced4da; border-radius: 4px; }
-        button { background-color: #007bff; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: background-color 0.2s; }
-        button:hover { background-color: #0056b3; }
-        button:disabled { background-color: #6c757d; cursor: not-allowed; }
-        .result-container { margin-top: 1rem; padding: 1rem; border: 1px solid #dee2e6; border-radius: 4px; min-height: 100px; background-color: #e9ecef; }
-        img { max-width: 100%; height: auto; border-radius: 4px; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 2s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        body { font-family: sans-serif; padding: 2em; display: flex; flex-direction: column; align-items: center; gap: 2em; }
+        #resultContainer { margin-top: 20px; border: 1px solid #ccc; padding: 10px; min-height: 100px; max-width: 500px; }
+        img { max-width: 100%; height: auto; }
+        button { font-size: 1em; padding: 0.5em 1em; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Imagia AI API Example</h1>
-        <p>This page demonstrates how to call the image manipulation API from a simple HTML file. Upload an image, provide instructions, and see the AI-edited result.</p>
-        
-        <div id="manipulate-section">
-            <h2>AI Manipulation</h2>
-            <form id="manipulate-form">
-                <div>
-                    <label for="manipulate-image">1. Choose an image:</label>
-                    <input type="file" id="manipulate-image" accept="image/*" required>
-                </div>
-                <div>
-                    <label for="instructions">2. Instructions:</label>
-                    <input type="text" id="instructions" value="Make the sky blue" required>
-                </div>
-                <button type="submit">Manipulate Image</button>
-            </form>
-            <h3>Result:</h3>
-            <div id="manipulate-result-container" class="result-container">
-                <p>Your manipulated image will appear here.</p>
-            </div>
-        </div>
+
+    <h1>Imagia AI API Example</h1>
+    <p>This page demonstrates how to use the "AI Manipulation" API endpoint.</p>
+
+    <button id="runButton">Run Manipulation Test</button>
+
+    <div id="resultContainer">
+        <p id="placeholder">Resulting image will be displayed here...</p>
+        <img id="resultImage" style="display: none;" alt="API Result" />
     </div>
 
     <script>
-        const manipulateForm = document.getElementById('manipulate-form');
-        const manipulateImageInput = document.getElementById('manipulate-image');
-        const instructionsInput = document.getElementById('instructions');
-        const resultContainer = document.getElementById('manipulate-result-container');
-        const submitButton = manipulateForm.querySelector('button');
+        document.getElementById('runButton').addEventListener('click', () => {
+            const resultContainer = document.getElementById('resultContainer');
+            const resultImage = document.getElementById('resultImage');
+            const placeholder = document.getElementById('placeholder');
 
-        manipulateForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+            // Show loading state
+            placeholder.textContent = 'Loading...';
+            resultImage.style.display = 'none';
+
+            // This is a placeholder base64 image. 
+            // In a real application, you would get this from a file input.
+            const base64Image = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QAiRXhpZgAATU0AKgAAAAgAAQESAAMAAAABAAEAAAAAAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCAAgACADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1VZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A/v4ooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKAP/9k=";
             
-            const file = manipulateImageInput.files[0];
-            if (!file) {
-                resultContainer.innerHTML = '<p style="color: red;">Please select an image file.</p>';
-                return;
-            }
+            // NOTE: Replace the URL with your deployed application's URL.
+            const apiUrl = 'https://6000-firebase-studio-1755789802422.cluster-73qgvk7hjjadkrjeyexca5ivva.cloudworkstations.dev/api/manipulate';
 
-            // Show spinner
-            resultContainer.innerHTML = '<div class="spinner"></div>';
-            submitButton.disabled = true;
-
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async () => {
-                const photoDataUri = reader.result;
-                const instructions = instructionsInput.value;
-
-                try {
-                    // NOTE: This assumes the HTML file is served from the same origin as the API.
-                    // If you run this from a different domain, you will need to provide the full URL
-                    // and ensure the server has the correct CORS headers.
-                    const response = await fetch('/api/manipulate', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            photoDataUri: photoDataUri,
-                            instructions: instructions
-                        }),
-                    });
-
-                    const data = await response.json();
-
-                    if (!response.ok) {
-                        throw new Error(data.error || `HTTP error! status: ${response.status}`);
-                    }
-                    
-                    if (data.editedPhotoDataUri) {
-                         const img = document.createElement('img');
-                         img.src = data.editedPhotoDataUri;
-                         resultContainer.innerHTML = '';
-                         resultContainer.appendChild(img);
-                    } else {
-                        throw new Error('API response did not contain an image.');
-                    }
-
-                } catch (error) {
-                    console.error('Error:', error);
-                    resultContainer.innerHTML = `<p style="color: red;"><strong>Error:</strong> ${error.message}</p>`;
-                } finally {
-                    submitButton.disabled = false;
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    photoDataUri: base64Image,
+                    instructions: 'Make this a vibrant and colorful abstract painting'
+                }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error || 'API request failed') });
                 }
-            };
-            reader.onerror = (error) => {
-                console.error('File reading error:', error);
-                resultContainer.innerHTML = '<p style="color: red;">Failed to read file.</p>';
-                submitButton.disabled = false;
-            };
+                return response.json();
+            })
+            .then(data => {
+                if (data.editedPhotoDataUri) {
+                    resultImage.src = data.editedPhotoDataUri;
+                    resultImage.style.display = 'block';
+                    placeholder.style.display = 'none';
+                } else {
+                    throw new Error(data.error || 'No image data in response');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                placeholder.textContent = `Error: ${error.message}`;
+                placeholder.style.display = 'block';
+                resultImage.style.display = 'none';
+            });
         });
     </script>
+
 </body>
 </html>

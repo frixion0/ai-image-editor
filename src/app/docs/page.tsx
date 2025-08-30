@@ -54,21 +54,14 @@ const CodeBlock = ({ code, className }: { code: string, className?: string }) =>
   );
 };
 
-const APITester = ({ endpoint, fields, baseUrl, fullApiUrl: initialFullApiUrl }: { endpoint: string; fields: { name: string; type: string; placeholder: string }[]; baseUrl: string; fullApiUrl?: string; }) => {
+const APITester = ({ endpoint, fields, fullApiUrl: initialFullApiUrl }: { endpoint: string; fields: { name: string; type: string; placeholder: string }[]; fullApiUrl: string; }) => {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
   const [imageDataUrl, setImageDataUrl] = useState<string | null>(null);
-  const [fullApiUrl, setFullApiUrl] = useState(initialFullApiUrl || `${baseUrl}/api/${endpoint}`);
+  const [fullApiUrl, setFullApiUrl] = useState(initialFullApiUrl);
   const { toast } = useToast();
-
-  React.useEffect(() => {
-    if (!initialFullApiUrl) {
-        setFullApiUrl(`${baseUrl}/api/${endpoint}`);
-    }
-  }, [baseUrl, endpoint, initialFullApiUrl]);
-
 
   const handleFileChange = (dataUrl: string) => {
     setImageDataUrl(dataUrl);
@@ -198,17 +191,12 @@ const APITester = ({ endpoint, fields, baseUrl, fullApiUrl: initialFullApiUrl }:
 
 
 export default function DocsPage() {
-  const [baseUrl, setBaseUrl] = useState('');
+  const deploymentUrl = 'https://6000-firebase-studio-1755789802422.cluster-73qgvk7hjjadkrjeyexca5ivva.cloudworkstations.dev';
   
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setBaseUrl(window.location.origin);
-    }
-  }, []);
+  const enhanceUrl = `${deploymentUrl}/api/enhance`;
+  const manipulateUrl = `${deploymentUrl}/api/manipulate`;
 
-  const manipulateUrl = 'https://6000-firebase-studio-1755789802422.cluster-73qgvk7hjjadkrjeyexca5ivva.cloudworkstations.dev/api/manipulate';
-
-  const enhanceExample = `fetch('${baseUrl}/api/enhance', {
+  const enhanceExample = `fetch('${enhanceUrl}', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
@@ -299,7 +287,7 @@ export default function DocsPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold mt-8 mb-4">API Tester</h3>
-                    <APITester endpoint="enhance" fields={[{ name: 'photoDataUri', type: 'file', placeholder: '' }]} baseUrl={baseUrl} />
+                    <APITester endpoint="enhance" fields={[{ name: 'photoDataUri', type: 'file', placeholder: '' }]} fullApiUrl={enhanceUrl} />
                   </div>
                 </CardContent>
               </Card>
@@ -316,7 +304,7 @@ export default function DocsPage() {
                 <CardContent className="space-y-6">
                   <div>
                     <h3 className="font-semibold mb-2">HTTP Request</h3>
-                    <p className="font-mono text-sm bg-muted p-2 rounded">POST {manipulateUrl}</p>
+                    <p className="font-mono text-sm bg-muted p-2 rounded">POST /api/manipulate</p>
                   </div>
                     <div>
                         <h3 className="font-semibold mb-2">Request Body (JSON)</h3>
@@ -349,7 +337,6 @@ export default function DocsPage() {
                         { name: 'photoDataUri', type: 'file', placeholder: '' },
                         { name: 'instructions', type: 'textarea', placeholder: 'e.g., "add a hat on the person"' }
                       ]} 
-                      baseUrl={baseUrl}
                       fullApiUrl={manipulateUrl}
                     />
                   </div>
