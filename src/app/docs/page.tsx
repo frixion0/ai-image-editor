@@ -195,6 +195,7 @@ export default function DocsPage() {
   
   const enhanceUrl = `${deploymentUrl}/api/enhance`;
   const manipulateUrl = `${deploymentUrl}/api/manipulate`;
+  const telegramWebhookUrl = `${deploymentUrl}/api/telegram/webhook`;
 
   const enhanceExample = `fetch('${enhanceUrl}', {
   method: 'POST',
@@ -235,6 +236,33 @@ export default function DocsPage() {
   "error": "The AI failed to generate an image. This might be due to safety settings or other restrictions. Please try a different prompt."
 }`;
 
+  const setWebhookCurl = `curl -F "url=${telegramWebhookUrl}" "https://api.telegram.org/bot<YOUR_TELEGRAM_BOT_TOKEN>/setWebhook"`;
+  
+  const webhookTestPayload = `{
+  "update_id": 12345678,
+  "message": {
+    "message_id": 123,
+    "from": {
+      "id": 1234567,
+      "is_bot": false,
+      "first_name": "John",
+      "last_name": "Doe",
+      "username": "johndoe",
+      "language_code": "en"
+    },
+    "chat": {
+      "id": 1234567,
+      "first_name": "John",
+      "last_name": "Doe",
+      "username": "johndoe",
+      "type": "private"
+    },
+    "date": 1678886400,
+    "text": "Hello bot!"
+  }
+}`;
+
+
   return (
     <div className="flex h-screen w-screen flex-col bg-background font-sans text-foreground">
       <Header />
@@ -249,6 +277,7 @@ export default function DocsPage() {
             <TabsList className="mb-4">
               <TabsTrigger value="enhance">Enhance Image</TabsTrigger>
               <TabsTrigger value="ai-manipulation">AI Manipulation</TabsTrigger>
+              <TabsTrigger value="telegram-webhook">Telegram Webhook</TabsTrigger>
             </TabsList>
             
             <TabsContent value="enhance">
@@ -339,6 +368,33 @@ export default function DocsPage() {
                       ]} 
                       fullApiUrl={manipulateUrl}
                     />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+             <TabsContent value="telegram-webhook">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Telegram Bot Webhook</CardTitle>
+                  <CardDescription>
+                    Use our AI image editor directly from Telegram. Send a photo with a caption to the bot.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div>
+                    <h3 className="font-semibold mb-2">Webhook URL</h3>
+                    <p className="font-mono text-sm bg-muted p-2 rounded">{telegramWebhookUrl}</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">Setup Command</h3>
+                    <p className="text-sm text-muted-foreground mb-2">Run the following command in your terminal to set the webhook for your bot. Replace `&lt;YOUR_TELEGRAM_BOT_TOKEN&gt;` with your actual bot token.</p>
+                    <CodeBlock code={setWebhookCurl} />
+                  </div>
+                   <div>
+                    <h3 className="font-semibold mb-2">Test Webhook</h3>
+                     <p className="text-sm text-muted-foreground mb-2">You can test the endpoint by sending a POST request with a payload like the one below.</p>
+                     <CodeBlock code={webhookTestPayload} className="json" />
                   </div>
                 </CardContent>
               </Card>
