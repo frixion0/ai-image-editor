@@ -1,3 +1,4 @@
+
 // src/app/api/telegram/webhook/route.ts
 import { NextResponse } from 'next/server';
 import { aiImageManipulation } from '@/ai/flows/ai-image-manipulation';
@@ -40,10 +41,29 @@ async function getFile(fileId: string): Promise<any> {
         body: JSON.stringify({ file_id: fileId }),
     });
     if (!response.ok) {
-        throw new Error('Failed to get file info from Telegram');
+        const errorData = await response.json();
+        throw new Error(`Failed to get file info from Telegram: ${errorData.description}`);
     }
     const data = await response.json();
     return data.result;
+}
+
+// Helper to determine MIME type from file path, defaulting to jpeg
+function getMimeTypeFromPath(filePath: string): string {
+    const extension = filePath.split('.').pop()?.toLowerCase();
+    switch(extension) {
+        case 'png':
+            return 'image/png';
+        case 'jpg':
+        case 'jpeg':
+            return 'image/jpeg';
+        case 'gif':
+            return 'image/gif';
+        case 'webp':
+            return 'image/webp';
+        default:
+            return 'image/jpeg'; // Default to JPEG
+    }
 }
 
 
@@ -69,9 +89,14 @@ export async function POST(request: Request) {
 
       // Download the image and convert to base64 data URI
       const imageResponse = await fetch(fileUrl);
+      if (!imageResponse.ok) {
+        throw new Error(`Failed to download image from Telegram. Status: ${imageResponse.status}`);
+      }
       const imageBuffer = await imageResponse.arrayBuffer();
       const imageBase64 = Buffer.from(imageBuffer).toString('base64');
-      const mimeType = imageResponse.headers.get('content-type') || 'image/jpeg';
+      
+      // Determine MIME type from file path to avoid "application/octet-stream"
+      const mimeType = getMimeTypeFromPath(fileInfo.file_path);
       const photoDataUri = `data:${mimeType};base64,${imageBase64}`;
 
       // Call your AI flow
@@ -96,15 +121,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ status: 'ok' });
   } catch (error: any) {
     console.error('Error in Telegram webhook:', error);
-    // Attempt to notify the user if possible
-    try {
-        const body = await request.json();
-        if (body.message && body.message.chat) {
-            await sendMessage(body.message.chat.id, `An internal error occurred: ${error.message}`);
-        }
-    } catch (e) {
-        console.error("Failed to notify user of error", e);
-    }
+    // It's tricky to get the chat_id from a failed request, so we can't reliably send a message back.
+    // We will log the error to the server.
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
