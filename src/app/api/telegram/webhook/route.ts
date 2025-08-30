@@ -6,17 +6,25 @@ import { aiImageManipulation } from '@/ai/flows/ai-image-manipulation';
 const TELEGRAM_BOT_TOKEN = '8385588826:AAFzWYNYppcjjwiHnPjK2fTtl4BqJzhcxR8';
 const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
 
+const PROMOTIONAL_MESSAGE = `
+---
+Website: https://neural-canvas-seven.vercel.app/
+Community: https://t.me/NeuralCanvascommunity
+Bot: @Ai_Neural_Canvas_bot`;
+
 // Helper function to send a message back to the user
 async function sendMessage(chatId: number, text: string) {
+  const fullMessage = `${text}\n${PROMOTIONAL_MESSAGE}`;
   await fetch(`${TELEGRAM_API_URL}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text }),
+    body: JSON.stringify({ chat_id: chatId, text: fullMessage }),
   });
 }
 
 // Helper function to send a photo back to the user
 async function sendPhoto(chatId: number, photoUrl: string, caption: string) {
+  const fullCaption = `${caption}\n${PROMOTIONAL_MESSAGE}`;
   // Telegram requires the photo to be sent as multipart/form-data if it's a data URI
   // Or it can be a public URL. Since we have a data URI, we need to convert it to a blob.
   const response = await fetch(photoUrl);
@@ -25,7 +33,7 @@ async function sendPhoto(chatId: number, photoUrl: string, caption: string) {
   const formData = new FormData();
   formData.append('chat_id', String(chatId));
   formData.append('photo', blob, 'edited-image.png');
-  formData.append('caption', caption);
+  formData.append('caption', fullCaption);
 
   await fetch(`${TELEGRAM_API_URL}/sendPhoto`, {
     method: 'POST',
