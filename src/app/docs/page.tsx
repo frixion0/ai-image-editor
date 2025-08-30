@@ -191,7 +191,7 @@ const APITester = ({ endpoint, fields, fullApiUrl: initialFullApiUrl }: { endpoi
 
 
 export default function DocsPage() {
-  const deploymentUrl = 'https://6000-firebase-studio-1755789802422.cluster-73qgvk7hjjadkrjeyexca5ivva.cloudworkstations.dev';
+  const deploymentUrl = 'https://ai-image-editor-eta.vercel.app';
   
   const enhanceUrl = `${deploymentUrl}/api/enhance`;
   const manipulateUrl = `${deploymentUrl}/api/manipulate`;
